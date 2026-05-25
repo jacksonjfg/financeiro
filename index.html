@@ -26401,6 +26401,7 @@ let nid=1326, ncid=10, nrid=10;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
 let lancSort={key:"data",dir:"asc"};
 
+const LOCAL_STATE_KEY="financeiroFamiliaState.v2";
 const FIREBASE_ALLOWED_EMAILS=["jackson.fg7@gmail.com","lorena.calsa@gmail.com"];
 const firebaseConfig={
   apiKey:"AIzaSyDz4-JMrFTwtK7zr0CtlYBm_oevG8vOjiw",
@@ -26412,6 +26413,7 @@ const firebaseConfig={
 };
 let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null, fbUnsub=null;
 let firebaseReady=false, stateLoaded=false, applyingRemote=false, saveTimer=null;
+let appStarted=false, lastLocalUpdatedAt=0;
 
 /* ─── UTILS ─────────────────────────────────────────────── */
 function fmt(v){return "R$\u00a0"+Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -26460,6 +26462,26 @@ function stateForCloud(){
   normalizeFinanceState();
   return {CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,updatedAt:Date.now(),updatedBy:fbUser?.email||""};
 }
+function saveLocalState(data){
+  try{
+    const state=data||stateForCloud();
+    localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify(state));
+    lastLocalUpdatedAt=Number(state.updatedAt)||Date.now();
+  }catch(err){console.warn("Não consegui salvar localmente",err);}
+}
+function loadLocalState(){
+  try{
+    const raw=localStorage.getItem(LOCAL_STATE_KEY);
+    if(!raw) return false;
+    const data=JSON.parse(raw);
+    lastLocalUpdatedAt=Number(data.updatedAt)||0;
+    applyCloudState(data);
+    return true;
+  }catch(err){
+    console.warn("Não consegui ler o estado local",err);
+    return false;
+  }
+}
 function applyCloudState(data){
   if(!data) return false;
   applyingRemote=true;
@@ -26475,6 +26497,7 @@ function applyCloudState(data){
   hydrateCatsFromRealData();
   renderAll();
   applyingRemote=false;
+  try{localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify(data));lastLocalUpdatedAt=Number(data.updatedAt)||lastLocalUpdatedAt;}catch(err){}
   return changed;
 }
 function normalizeFinanceState(){
@@ -26513,12 +26536,15 @@ function setSyncStatus(status){
   dot.className="sync-dot"+(status?` ${status}`:"");
 }
 function scheduleSave(){
-  if(!firebaseReady||!stateLoaded||applyingRemote||!fbDoc) return;
+  if(!appStarted||applyingRemote) return;
+  const state=stateForCloud();
+  saveLocalState(state);
+  if(!firebaseReady||!stateLoaded||!fbDoc) return;
   setSyncStatus("saving");
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
     try{
-      await fbDoc.set(stateForCloud(),{merge:true});
+      await fbDoc.set(state,{merge:true});
       setSyncStatus("ok");
     }catch(err){
       console.error(err);
@@ -26562,9 +26588,12 @@ function initFirebase(){
     firebaseReady=true;
     fbDoc=fbDb.collection("financeiro").doc("familia");
     fbUnsub=fbDoc.onSnapshot(snap=>{
-      const changed=snap.exists?applyCloudState(snap.data()):false;
+      const remote=snap.exists?snap.data():null;
+      const remoteUpdated=Number(remote?.updatedAt)||0;
+      let changed=false;
+      if(remote&&remoteUpdated>=lastLocalUpdatedAt) changed=applyCloudState(remote);
       stateLoaded=true;
-      if(!snap.exists||changed) scheduleSave();
+      if(!snap.exists||changed||lastLocalUpdatedAt>remoteUpdated) scheduleSave();
       setSyncStatus("ok");
     },err=>{
       console.error(err);
@@ -26573,6 +26602,13 @@ function initFirebase(){
     });
   });
 }
+window.addEventListener("beforeunload",()=>{
+  const el=document.activeElement;
+  if(el?.classList?.contains("plan-inp")&&typeof el.onchange==="function"){
+    try{el.onchange(new Event("change"));}catch(err){}
+  }
+  saveLocalState(stateForCloud());
+});
 
 /* ─── NAVEGAÇÃO ─────────────────────────────────────────── */
 function setPage(p){
@@ -27668,7 +27704,9 @@ function exportar(){
 hydrateCatsFromRealData();
 normalizeFinanceState();
 initPlanSelects();
+loadLocalState();
 renderAll();
+appStarted=true;
 initFirebase();
 </script>
 </body>
