@@ -26410,7 +26410,7 @@ const firebaseConfig={
   messagingSenderId:"323755941756",
   appId:"1:323755941756:web:ddb0003a290ca8ede70ef9"
 };
-let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null;
+let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null, fbUnsub=null;
 let firebaseReady=false, stateLoaded=false, applyingRemote=false, saveTimer=null;
 
 /* ─── UTILS ─────────────────────────────────────────────── */
@@ -26457,10 +26457,11 @@ function ctxList(c){return c==="todos"?["pessoal","pj"]:[c]}
 
 /* ─── FIREBASE ──────────────────────────────────────────── */
 function stateForCloud(){
+  normalizeFinanceState();
   return {CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,updatedAt:Date.now(),updatedBy:fbUser?.email||""};
 }
 function applyCloudState(data){
-  if(!data) return;
+  if(!data) return false;
   applyingRemote=true;
   CATS=data.CATS||CATS;
   PLAN=data.PLAN||PLAN;
@@ -26470,9 +26471,41 @@ function applyCloudState(data){
   lancs=Array.isArray(data.lancs)?data.lancs:lancs;
   recs=Array.isArray(data.recs)?data.recs:recs;
   nid=Number(data.nid)||nid; ncid=Number(data.ncid)||ncid; nrid=Number(data.nrid)||nrid;
+  const changed=normalizeFinanceState();
   hydrateCatsFromRealData();
   renderAll();
   applyingRemote=false;
+  return changed;
+}
+function normalizeFinanceState(){
+  let changed=false;
+  const deduped=[];
+  const byKey=new Map();
+  for(const raw of lancs){
+    const l={...raw};
+    if("_sel" in l){delete l._sel; changed=true;}
+    if(!l.data&&l.ano&&l.mes) l.data=`${l.ano}-${String(l.mes).padStart(2,"0")}-01`;
+    if(l.data){
+      const p=String(l.data).split("-");
+      l.ano=Number(l.ano)||parseInt(p[0]);
+      l.mes=Number(l.mes)||parseInt(p[1]);
+    }
+    const recurring=/gasto recorrente/i.test(l.desc||"")||l.lt==="recorrente";
+    const key=recurring?[l.tipo,l.ctx,l.ano,l.mes,l.cat,l.sub,"recorrente"].join("|"):null;
+    if(key&&byKey.has(key)){
+      const idx=byKey.get(key);
+      const prev=deduped[idx];
+      const keepCurrent=Number(l.valor||0)>=Number(prev.valor||0);
+      if(keepCurrent) deduped[idx]=l;
+      changed=true;
+    }else{
+      if(key) byKey.set(key,deduped.length);
+      deduped.push(l);
+    }
+  }
+  if(deduped.length!==lancs.length) changed=true;
+  lancs=deduped;
+  return changed;
 }
 function setSyncStatus(status){
   const dot=document.getElementById("sync-dot");
@@ -26510,6 +26543,7 @@ function initFirebase(){
   fbAuth.onAuthStateChanged(async user=>{
     fbUser=user;
     stateLoaded=false;
+    if(fbUnsub){fbUnsub();fbUnsub=null;}
     document.getElementById("auth-msg").textContent="";
     if(!user){
       document.getElementById("auth-gate").classList.remove("hidden");
@@ -26527,11 +26561,16 @@ function initFirebase(){
     document.getElementById("user-email").textContent=email;
     firebaseReady=true;
     fbDoc=fbDb.collection("financeiro").doc("familia");
-    const snap=await fbDoc.get();
-    if(snap.exists) applyCloudState(snap.data());
-    stateLoaded=true;
-    if(!snap.exists) scheduleSave();
-    setSyncStatus("ok");
+    fbUnsub=fbDoc.onSnapshot(snap=>{
+      const changed=snap.exists?applyCloudState(snap.data()):false;
+      stateLoaded=true;
+      if(!snap.exists||changed) scheduleSave();
+      setSyncStatus("ok");
+    },err=>{
+      console.error(err);
+      document.getElementById("auth-msg").textContent="Não consegui sincronizar. Confira as regras do Firestore.";
+      setSyncStatus("");
+    });
   });
 }
 
@@ -27627,6 +27666,7 @@ function exportar(){
 }
 
 hydrateCatsFromRealData();
+normalizeFinanceState();
 initPlanSelects();
 renderAll();
 initFirebase();
