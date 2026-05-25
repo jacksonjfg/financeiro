@@ -27158,7 +27158,8 @@ function setLancMes(m){
   renderLanc();
 }
 function openLancFilter(){
-  const base=lancs.filter(l=>l.ano===parseInt(document.getElementById("lanc-yr").value)&&l.mes===lancMes&&(cLanc==="todos"||l.ctx===cLanc));
+  const yr=parseInt(document.getElementById("lanc-yr").value);
+  const base=lancs.filter(l=>(l.ano===yr||lancFilter.dateFrom||lancFilter.dateTo)&&(cLanc==="todos"||l.ctx===cLanc));
   const setOpts=(id,vals,label)=>{document.getElementById(id).innerHTML=`<option value="">${label}</option>`+[...new Set(vals.filter(Boolean))].sort().map(v=>`<option value="${v}">${v}</option>`).join("")};
   setOpts("flt-cat",base.map(l=>l.cat),"Selecione...");
   setOpts("flt-sub",base.map(l=>l.sub),"Selecione...");
@@ -27208,6 +27209,9 @@ function sortLanc(key){
   else lancSort={key,dir:"asc"};
   renderLanc();
 }
+function hasPeriodFilter(){
+  return !!(lancFilter.dateFrom||lancFilter.dateTo);
+}
 function renderLanc(){
   // chips — 1 por vez
   document.getElementById("lanc-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
@@ -27219,7 +27223,7 @@ function renderLanc(){
   const fcat=document.getElementById("fcat").value;
   const fst=document.getElementById("fst").value;
 
-  let d=lancs.filter(l=>l.ano===yr&&l.mes===lancMes&&(cLanc==="todos"||l.ctx===cLanc));
+  let d=lancs.filter(l=>(hasPeriodFilter()||l.ano===yr&&l.mes===lancMes)&&(cLanc==="todos"||l.ctx===cLanc));
   const cats=[...new Set(d.map(l=>l.cat))];
   document.getElementById("fcat").innerHTML=`<option value="">Categoria</option>`+cats.map(c=>`<option ${fcat===c?"selected":""}>${c}</option>`).join("");
   if(busca) d=d.filter(l=>l.desc.toLowerCase().includes(busca));
