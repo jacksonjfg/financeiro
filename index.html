@@ -15671,6 +15671,7 @@ let recs=[];
 let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026;
 let expSubs={};
 let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
+let pg="plan", cPlan="todos", cLanc="todos", cPend="todos";
 let nid=741, ncid=10, nrid=1;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
 let lancSort={key:"data",dir:"asc"};
@@ -15680,6 +15681,7 @@ const LOCAL_STATE_KEY="financeiroFamiliaState.v5.xlsx20260531.planfix";
 const DATASET_VERSION="xlsx-20260531-limpo-v5-planfix";
 const APP_PASSWORD="financeiro2026";
 const APP_UNLOCK_KEY="financeiroFamiliaUnlocked.v1";
+const MIN_VALID_LANCS=50;
 const firebaseConfig={
   apiKey:"AIzaSyDz4-JMrFTwtK7zr0CtlYBm_oevG8vOjiw",
   authDomain:"financeiro-b3e63.firebaseapp.com",
@@ -15762,6 +15764,10 @@ function loadLocalState(){
     const raw=localStorage.getItem(LOCAL_STATE_KEY);
     if(!raw) return false;
     const data=JSON.parse(raw);
+    if(!isUsableSavedState(data)){
+      localStorage.removeItem(LOCAL_STATE_KEY);
+      return false;
+    }
     lastLocalUpdatedAt=Number(data.updatedAt)||0;
     applyCloudState(data);
     return true;
@@ -15772,6 +15778,7 @@ function loadLocalState(){
 }
 function applyCloudState(data){
   if(!data) return false;
+  if(!isUsableSavedState(data)) return false;
   applyingRemote=true;
   CATS=data.CATS||CATS;
   PLAN=data.PLAN||PLAN;
@@ -15829,12 +15836,27 @@ function normalizeFinanceState(){
   }
   return changed;
 }
+function isUsableSavedState(data){
+  return !!(data&&data.dataVersion===DATASET_VERSION&&Array.isArray(data.lancs)&&data.lancs.length>=MIN_VALID_LANCS);
+}
 function setSyncStatus(status){
   const dot=document.getElementById("sync-dot");
   if(!dot) return;
   dot.className="sync-dot"+(status?` ${status}`:"");
 }
-function isUnlocked(){return localStorage.getItem(APP_UNLOCK_KEY)==="1";}
+function rememberUnlock(){
+  try{localStorage.setItem(APP_UNLOCK_KEY,"1");}catch(err){}
+  try{sessionStorage.setItem(APP_UNLOCK_KEY,"1");}catch(err){}
+}
+function forgetUnlock(){
+  try{localStorage.removeItem(APP_UNLOCK_KEY);}catch(err){}
+  try{sessionStorage.removeItem(APP_UNLOCK_KEY);}catch(err){}
+}
+function isUnlocked(){
+  try{if(localStorage.getItem(APP_UNLOCK_KEY)==="1") return true;}catch(err){}
+  try{if(sessionStorage.getItem(APP_UNLOCK_KEY)==="1") return true;}catch(err){}
+  return false;
+}
 function setGate(open){
   const gate=document.getElementById("auth-gate");
   const pill=document.getElementById("user-pill");
@@ -15850,7 +15872,7 @@ async function unlockApp(){
     if(msg) msg.textContent="Senha incorreta.";
     return;
   }
-  localStorage.setItem(APP_UNLOCK_KEY,"1");
+  rememberUnlock();
   setGate(false);
   if(msg) msg.textContent="";
   await connectFirebaseSync();
@@ -15864,9 +15886,9 @@ function startCloudListener(){
     const remoteUpdated=Number(remote?.updatedAt)||0;
     const firstSync=!stateLoaded;
     let changed=false;
-    if(remote&&remote.dataVersion===DATASET_VERSION&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
+    if(remote&&isUsableSavedState(remote)&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
     stateLoaded=true;
-    if(!snap.exists||remote?.dataVersion!==DATASET_VERSION||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
+    if(!snap.exists||!isUsableSavedState(remote)||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
     setSyncStatus("ok");
   },err=>{
     console.error(err);
@@ -15951,7 +15973,7 @@ async function ensureFirebaseReady(){
   return firebaseLoadPromise;
 }
 function logoutFirebase(){
-  localStorage.removeItem(APP_UNLOCK_KEY);
+  forgetUnlock();
   if(fbUnsub){fbUnsub();fbUnsub=null;}
   if(fbAuth) fbAuth.signOut().catch(()=>{});
   setGate(true);
@@ -17113,11 +17135,13 @@ normalizeFinanceState();
 normalizeCatLists();
 initPlanSelects();
 loadLocalState();
+cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
 appStarted=true;
 setGate(!isUnlocked());
 if(isUnlocked()) setTimeout(connectFirebaseSync,300);
 window.addEventListener("load",()=>{if(isUnlocked()) connectFirebaseSync();});
+setTimeout(()=>{setCPlan("todos");renderAll();},0);
 </script>
 </body>
 </html>
