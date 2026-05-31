@@ -15719,7 +15719,7 @@ function getPlanCatsForMode(yr,ctxs,mode){
 }
 function getPlanSum(yr,m,ctxs,mode){
   const validCats=getPlanCatsForMode(yr,ctxs,mode);
-  return validCats.reduce((sum,cat)=>{
+  return Array.from(validCats).reduce((sum,cat)=>{
     return sum+ctxs.reduce((s,ctx)=>s+(PLAN[yr]?.[m]?.[ctx]?.[cat]||0),0);
   },0);
 }
