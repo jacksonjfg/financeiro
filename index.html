@@ -494,6 +494,14 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
   transition:all .12s;
 }
 .pay-btn:hover{background:var(--grn);color:#fff;border-color:var(--grn)}
+.hide-pend-btn{
+  border:1px solid var(--bd);background:var(--sur);
+  color:var(--mu);border-radius:var(--rsm);
+  padding:5px 9px;font-size:11px;font-weight:600;
+  cursor:pointer;display:flex;align-items:center;gap:4px;
+}
+.hide-pend-btn:hover{background:var(--sur2);color:var(--tx)}
+.pend-item.is-hidden{opacity:.55;background:var(--sur2)}
 
 /* ─── CARTÕES ────────────────────────────────── */
 .cart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
@@ -1449,6 +1457,9 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
           <button class="sb" onclick="setCPend('pj')" id="pendctx-pj">PJ Aluma</button>
         </div>
         <select class="yrsel" id="pend-yr" onchange="renderPend()"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
+        <button class="stats-toggle" id="pend-hidden-btn" onclick="toggleShowHiddenPend()" title="Mostrar ou esconder pendências ocultas">
+          <i class="ti ti-eye"></i> Ocultas
+        </button>
         <div class="mchips" id="pend-chips"></div>
       </div>
       <div id="pend-content"></div>
@@ -15656,6 +15667,7 @@ let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
 let nid=741, ncid=10, nrid=1;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
 let lancSort={key:"data",dir:"asc"};
+let hiddenPendIds=[], showHiddenPend=false;
 
 const LOCAL_STATE_KEY="financeiroFamiliaState.v5.xlsx20260531.planfix";
 const DATASET_VERSION="xlsx-20260531-limpo-v5-planfix";
@@ -15728,7 +15740,7 @@ function ctxList(c){return c==="todos"?["pessoal","pj"]:[c]}
 /* ─── FIREBASE ──────────────────────────────────────────── */
 function stateForCloud(){
   normalizeFinanceState();
-  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,updatedAt:Date.now(),updatedBy:fbUser?.email||""};
+  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,updatedAt:Date.now(),updatedBy:fbUser?.email||""};
 }
 function saveLocalState(data){
   try{
@@ -15760,6 +15772,7 @@ function applyCloudState(data){
   contas=Array.isArray(data.contas)?data.contas:contas;
   lancs=Array.isArray(data.lancs)?data.lancs:lancs;
   recs=Array.isArray(data.recs)?data.recs:recs;
+  hiddenPendIds=Array.isArray(data.hiddenPendIds)?data.hiddenPendIds:hiddenPendIds;
   nid=Number(data.nid)||nid; ncid=Number(data.ncid)||ncid; nrid=Number(data.nrid)||nrid;
   const changed=normalizeFinanceState();
   hydrateCatsFromRealData();
@@ -15797,6 +15810,15 @@ function normalizeFinanceState(){
   }
   if(deduped.length!==lancs.length) changed=true;
   lancs=deduped;
+  if(Array.isArray(hiddenPendIds)){
+    const validIds=new Set(lancs.map(l=>l.id));
+    const cleanHidden=hiddenPendIds.filter(id=>validIds.has(id));
+    if(cleanHidden.length!==hiddenPendIds.length) changed=true;
+    hiddenPendIds=cleanHidden;
+  }else{
+    hiddenPendIds=[];
+    changed=true;
+  }
   return changed;
 }
 function setSyncStatus(status){
@@ -15864,7 +15886,10 @@ async function loginGoogle(){
   const ok=await ensureFirebaseReady();
   if(!ok||!fbAuth) return alert("Firebase ainda não carregou. Tente atualizar a página ou abrir pelo GitHub Pages.");
   const provider=new firebase.auth.GoogleAuthProvider();
-  try{await fbAuth.signInWithPopup(provider);}
+  try{
+    await fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    await fbAuth.signInWithPopup(provider);
+  }
   catch(err){
     document.getElementById("auth-msg").textContent="Não consegui entrar com Google. Verifique o provedor Google, domínio autorizado ou abra pelo GitHub Pages.";
     console.error(err);
@@ -15877,6 +15902,7 @@ function initFirebase(){
   fbApp=firebase.apps?.length?firebase.app():firebase.initializeApp(firebaseConfig);
   fbAuth=firebase.auth();
   fbDb=firebase.firestore();
+  try{fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(err){console.warn("Persistência local indisponível",err);}
   fbAuth.onAuthStateChanged(async user=>{
     fbUser=user;
     stateLoaded=false;
@@ -15901,10 +15927,11 @@ function initFirebase(){
     fbUnsub=fbDoc.onSnapshot(snap=>{
       const remote=snap.exists?snap.data():null;
       const remoteUpdated=Number(remote?.updatedAt)||0;
+      const firstSync=!stateLoaded;
       let changed=false;
-      if(remote&&remote.dataVersion===DATASET_VERSION&&remoteUpdated>=lastLocalUpdatedAt) changed=applyCloudState(remote);
+      if(remote&&remote.dataVersion===DATASET_VERSION&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
       stateLoaded=true;
-      if(!snap.exists||remote?.dataVersion!==DATASET_VERSION||changed||lastLocalUpdatedAt>remoteUpdated) scheduleSave();
+      if(!snap.exists||remote?.dataVersion!==DATASET_VERSION||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
       setSyncStatus("ok");
     },err=>{
       console.error(err);
@@ -15918,7 +15945,9 @@ window.addEventListener("beforeunload",()=>{
   if(el?.classList?.contains("plan-inp")&&typeof el.onchange==="function"){
     try{el.onchange(new Event("change"));}catch(err){}
   }
-  saveLocalState(stateForCloud());
+  const state=stateForCloud();
+  state.updatedAt=lastLocalUpdatedAt||state.updatedAt;
+  saveLocalState(state);
 });
 
 /* ─── NAVEGAÇÃO ─────────────────────────────────────────── */
@@ -16716,21 +16745,44 @@ function togglePendM(m){
   else pendMeses=[...pendMeses,m].sort((a,b)=>a-b);
   renderPend();
 }
-function pagar(id){const l=lancs.find(x=>x.id===id);if(l){l.status="concluido";renderAll();}}
+function pagar(id){const l=lancs.find(x=>x.id===id);if(l){l.status="concluido";renderAll();scheduleSave();}}
+function pendBucketDay(dateStr){
+  const day=parseInt(String(dateStr||"").split("-")[2])||31;
+  if(day<=10) return 10;
+  if(day<=15) return 15;
+  if(day<=20) return 20;
+  return 31;
+}
+function pendDateLabel(dateStr){return String(dateStr||"").split("-").reverse().join("/");}
+function togglePendHidden(id){
+  if(hiddenPendIds.includes(id)) hiddenPendIds=hiddenPendIds.filter(x=>x!==id);
+  else hiddenPendIds=[...hiddenPendIds,id];
+  renderPend();
+  scheduleSave();
+}
+function toggleShowHiddenPend(){showHiddenPend=!showHiddenPend;renderPend();}
 
 function renderPend(){
   document.getElementById("pend-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${pendMeses.includes(m)?"active":""}" onclick="togglePendM(${m})">${MN[m]}</div>`).join("");
 
   const yr=parseInt(document.getElementById("pend-yr").value);
-  const pends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&l.tipo==="despesa"&&(cPend==="todos"||l.ctx===cPend));
+  const allPends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&l.tipo==="despesa"&&(cPend==="todos"||l.ctx===cPend));
+  const hiddenSet=new Set(hiddenPendIds);
+  const pends=showHiddenPend?allPends:allPends.filter(l=>!hiddenSet.has(l.id));
   const total=pends.reduce((s,l)=>s+l.valor,0);
+  const hiddenCount=allPends.length-pends.length;
+  const hiddenBtn=document.getElementById("pend-hidden-btn");
+  if(hiddenBtn){
+    hiddenBtn.classList.toggle("active",showHiddenPend);
+    hiddenBtn.innerHTML=`<i class="ti ${showHiddenPend?"ti-eye-off":"ti-eye"}"></i> ${showHiddenPend?"Ocultar ocultas":"Ocultas"}${hiddenCount?` (${hiddenCount})`:""}`;
+  }
 
   let html="";
   if(!pends.length){
     html=`<div class="pend-alert" style="background:var(--te2);border-color:var(--te3)">
-      <span style="font-size:13px;font-weight:600;color:var(--te);display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Tudo pago!</span>
-      <span style="font-size:12px;color:var(--te)">Nenhuma pendência nos meses selecionados.</span>
+      <span style="font-size:13px;font-weight:600;color:var(--te);display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Tudo limpo!</span>
+      <span style="font-size:12px;color:var(--te)">${hiddenCount&&!showHiddenPend?"As pendências desse filtro estão ocultas.":"Nenhuma pendência nos meses selecionados."}</span>
     </div>`;
   } else {
     html=`<div class="pend-alert" style="background:var(--re2);border-color:var(--re3);margin-bottom:14px">
@@ -16740,29 +16792,31 @@ function renderPend(){
 
     const hoje=new Date().toISOString().split("T")[0];
 
-    // Agrupa: Mês > Data > Categoria > Itens
-    // primeiro por mês
+    // Agrupa: Mês > Dia base (10/15/20/31) > Categoria > Itens
     const mGrupos={};
     for(const l of pends){
       if(!mGrupos[l.mes]) mGrupos[l.mes]={};
-      if(!mGrupos[l.mes][l.data]) mGrupos[l.mes][l.data]={};
-      if(!mGrupos[l.mes][l.data][l.cat]) mGrupos[l.mes][l.data][l.cat]=[];
-      mGrupos[l.mes][l.data][l.cat].push(l);
+      const bucket=pendBucketDay(l.data);
+      if(!mGrupos[l.mes][bucket]) mGrupos[l.mes][bucket]={};
+      if(!mGrupos[l.mes][bucket][l.cat]) mGrupos[l.mes][bucket][l.cat]=[];
+      mGrupos[l.mes][bucket][l.cat].push(l);
     }
 
     for(const mes of Object.keys(mGrupos).sort((a,b)=>a-b)){
-      const mDatas=mGrupos[mes];
-      const mTotal=Object.values(mDatas).flatMap(d=>Object.values(d).flat()).reduce((s,l)=>s+l.valor,0);
+      const mBuckets=mGrupos[mes];
+      const mTotal=Object.values(mBuckets).flatMap(d=>Object.values(d).flat()).reduce((s,l)=>s+l.valor,0);
       html+=`<div class="pend-mes-block">
         <div class="pend-mes-hdr"><span class="pend-mes-nm">${MNF[mes]} ${yr}</span><span class="pend-mes-tot">${fmt(mTotal)}</span></div>
         <div class="pend-wrap">`;
 
-      for(const [dt,cats] of Object.entries(mDatas).sort((a,b)=>a[0].localeCompare(b[0]))){
-        const dtTotal=Object.values(cats).flat().reduce((s,l)=>s+l.valor,0);
-        const isAtras=dt<hoje, isHoje=dt===hoje;
+      for(const [bucket,cats] of Object.entries(mBuckets).sort((a,b)=>Number(a[0])-Number(b[0]))){
+        const itemsFlat=Object.values(cats).flat();
+        const dtTotal=itemsFlat.reduce((s,l)=>s+l.valor,0);
+        const bucketDate=`${yr}-${String(mes).padStart(2,"0")}-${String(bucket).padStart(2,"0")}`;
+        const isAtras=itemsFlat.some(l=>l.data<hoje), isHoje=itemsFlat.some(l=>l.data===hoje);
         html+=`<div class="pend-date-hdr" style="${isAtras?"background:var(--re2)":""}">
           <div class="pend-date-lbl" style="${isAtras?"color:var(--re)":""}">
-            <i class="ti ti-calendar-event"></i> ${dt.split("-").reverse().join("/")}${isHoje?" — hoje":isAtras?" — atrasado":""}
+            <i class="ti ti-calendar-event"></i> Dia ${bucket} · até ${pendDateLabel(bucketDate)}${isHoje?" — tem hoje":isAtras?" — tem atrasado":""}
           </div>
           <div class="pend-date-tot">${fmt(dtTotal)}</div>
         </div>`;
@@ -16770,14 +16824,17 @@ function renderPend(){
         for(const [cat,items] of Object.entries(cats)){
           const catTotal=items.reduce((s,l)=>s+l.valor,0);
           html+=`<div class="pend-cat-hdr"><span class="pend-cat-nm">${cat}</span><span class="pend-cat-tot">${fmt(catTotal)}</span></div>`;
-          for(const l of items){
-            html+=`<div class="pend-item">
-              <div class="pdot" style="background:${isAtras?"var(--re)":"var(--or)"}"></div>
+          for(const l of items.sort((a,b)=>String(a.data).localeCompare(String(b.data)))){
+            const itemHidden=hiddenSet.has(l.id);
+            const itemLate=l.data<hoje;
+            html+=`<div class="pend-item ${itemHidden?"is-hidden":""}">
+              <div class="pdot" style="background:${itemLate?"var(--re)":"var(--or)"}"></div>
               <div class="pinfo">
                 <div class="pdesc">${l.desc}</div>
-                <div class="pcat">${l.sub} · ${l.ctx==="pj"?"PJ Aluma":"Pessoal"} · ${l.inst}</div>
+                <div class="pcat">${pendDateLabel(l.data)} · ${l.sub} · ${l.ctx==="pj"?"PJ Aluma":"Pessoal"} · ${l.inst}</div>
               </div>
               <div class="pval">${fmt(l.valor)}</div>
+              <button class="hide-pend-btn" onclick="togglePendHidden(${l.id})"><i class="ti ${itemHidden?"ti-eye":"ti-eye-off"}"></i> ${itemHidden?"Mostrar":"Esconder"}</button>
               <button class="pay-btn" onclick="pagar(${l.id})"><i class="ti ti-check"></i> Pagar</button>
             </div>`;
           }
