@@ -15671,6 +15671,7 @@ const firebaseConfig={
 let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null, fbUnsub=null;
 let firebaseReady=false, stateLoaded=false, applyingRemote=false, saveTimer=null;
 let appStarted=false, lastLocalUpdatedAt=0;
+let firebaseLoadPromise=null;
 
 /* ─── UTILS ─────────────────────────────────────────────── */
 function fmt(v){return "R$\u00a0"+Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -15820,18 +15821,60 @@ function scheduleSave(){
     }
   },500);
 }
+function loadExternalScript(src){
+  return new Promise((resolve,reject)=>{
+    const existing=[...document.scripts].find(s=>s.src===src);
+    if(existing&&existing.dataset.loaded==="true") return resolve();
+    if(existing){
+      existing.addEventListener("load",()=>resolve(),{once:true});
+      existing.addEventListener("error",()=>reject(new Error(src)),{once:true});
+      return;
+    }
+    const s=document.createElement("script");
+    s.src=src;
+    s.onload=()=>{s.dataset.loaded="true";resolve();};
+    s.onerror=()=>reject(new Error(src));
+    document.head.appendChild(s);
+  });
+}
+async function ensureFirebaseReady(){
+  if(fbAuth&&fbDb) return true;
+  if(firebaseLoadPromise) return firebaseLoadPromise;
+  firebaseLoadPromise=(async()=>{
+    const msg=document.getElementById("auth-msg");
+    if(msg) msg.textContent="Carregando Firebase...";
+    if(!window.firebase?.auth||!window.firebase?.firestore){
+      await loadExternalScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js");
+      await loadExternalScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js");
+      await loadExternalScript("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js");
+    }
+    initFirebase();
+    if(msg) msg.textContent="";
+    return !!(fbAuth&&fbDb);
+  })().catch(err=>{
+    firebaseLoadPromise=null;
+    const msg=document.getElementById("auth-msg");
+    if(msg) msg.textContent="Não consegui carregar o Firebase. Confira a internet ou abra pelo GitHub Pages.";
+    console.error(err);
+    return false;
+  });
+  return firebaseLoadPromise;
+}
 async function loginGoogle(){
-  if(!fbAuth) return alert("Firebase ainda não carregou.");
+  const ok=await ensureFirebaseReady();
+  if(!ok||!fbAuth) return alert("Firebase ainda não carregou. Tente atualizar a página ou abrir pelo GitHub Pages.");
   const provider=new firebase.auth.GoogleAuthProvider();
   try{await fbAuth.signInWithPopup(provider);}
   catch(err){
-    document.getElementById("auth-msg").textContent="Não consegui entrar com Google. Verifique se o provedor Google foi ativado no Firebase.";
+    document.getElementById("auth-msg").textContent="Não consegui entrar com Google. Verifique o provedor Google, domínio autorizado ou abra pelo GitHub Pages.";
+    console.error(err);
   }
 }
 function logoutFirebase(){if(fbAuth) fbAuth.signOut();}
 function initFirebase(){
-  if(!window.firebase) return;
-  fbApp=firebase.initializeApp(firebaseConfig);
+  if(fbAuth&&fbDb) return;
+  if(!window.firebase?.auth||!window.firebase?.firestore) return;
+  fbApp=firebase.apps?.length?firebase.app():firebase.initializeApp(firebaseConfig);
   fbAuth=firebase.auth();
   fbDb=firebase.firestore();
   fbAuth.onAuthStateChanged(async user=>{
@@ -16991,6 +17034,8 @@ loadLocalState();
 renderAll();
 appStarted=true;
 initFirebase();
+setTimeout(ensureFirebaseReady,300);
+window.addEventListener("load",ensureFirebaseReady);
 </script>
 </body>
 </html>
