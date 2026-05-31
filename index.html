@@ -1327,6 +1327,12 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 .auth-card p{color:var(--mu);line-height:1.45;margin-bottom:18px}
 .auth-card .btn-p{width:100%;justify-content:center;height:42px}
 .auth-msg{margin-top:14px;color:var(--re);font-weight:700;font-size:12px;min-height:18px}
+.auth-field{
+  width:100%;height:42px;border:1px solid var(--bd);
+  border-radius:10px;padding:0 12px;margin:8px 0 12px;
+  font:600 14px/1 var(--fn);color:var(--tx);outline:none;
+}
+.auth-field:focus{border-color:var(--or);box-shadow:0 0 0 3px rgba(249,115,22,.12)}
 .user-pill{
   display:none;align-items:center;gap:8px;
   height:34px;padding:0 10px;border:1px solid var(--bd);
@@ -1348,8 +1354,9 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   <div class="auth-card">
     <div class="auth-mark"><i class="ti ti-flame"></i></div>
     <h1>Financeiro</h1>
-    <p>Entre com o Google para sincronizar os dados entre você e a Lorena.</p>
-    <button class="btn-p" onclick="loginGoogle()"><i class="ti ti-brand-google"></i> Entrar com Google</button>
+    <p>Digite a senha do financeiro para acessar os dados de vocês.</p>
+    <input class="auth-field" id="auth-pass" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter') unlockApp()">
+    <button class="btn-p" onclick="unlockApp()"><i class="ti ti-lock-open"></i> Entrar</button>
     <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
@@ -15671,7 +15678,8 @@ let hiddenPendIds=[], showHiddenPend=false;
 
 const LOCAL_STATE_KEY="financeiroFamiliaState.v5.xlsx20260531.planfix";
 const DATASET_VERSION="xlsx-20260531-limpo-v5-planfix";
-const FIREBASE_ALLOWED_EMAILS=["jackson.fg7@gmail.com","lorena.calsa@gmail.com"];
+const APP_PASSWORD="financeiro2026";
+const APP_UNLOCK_KEY="financeiroFamiliaUnlocked.v1";
 const firebaseConfig={
   apiKey:"AIzaSyDz4-JMrFTwtK7zr0CtlYBm_oevG8vOjiw",
   authDomain:"financeiro-b3e63.firebaseapp.com",
@@ -15740,7 +15748,7 @@ function ctxList(c){return c==="todos"?["pessoal","pj"]:[c]}
 /* ─── FIREBASE ──────────────────────────────────────────── */
 function stateForCloud(){
   normalizeFinanceState();
-  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,updatedAt:Date.now(),updatedBy:fbUser?.email||""};
+  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,updatedAt:Date.now(),updatedBy:fbUser?.uid||"senha-local"};
 }
 function saveLocalState(data){
   try{
@@ -15826,6 +15834,66 @@ function setSyncStatus(status){
   if(!dot) return;
   dot.className="sync-dot"+(status?` ${status}`:"");
 }
+function isUnlocked(){return localStorage.getItem(APP_UNLOCK_KEY)==="1";}
+function setGate(open){
+  const gate=document.getElementById("auth-gate");
+  const pill=document.getElementById("user-pill");
+  if(gate) gate.classList.toggle("hidden",!open);
+  if(pill) pill.classList.toggle("active",!open);
+  const label=document.getElementById("user-email");
+  if(label) label.textContent="Acesso por senha";
+}
+async function unlockApp(){
+  const pass=document.getElementById("auth-pass")?.value||"";
+  const msg=document.getElementById("auth-msg");
+  if(pass!==APP_PASSWORD){
+    if(msg) msg.textContent="Senha incorreta.";
+    return;
+  }
+  localStorage.setItem(APP_UNLOCK_KEY,"1");
+  setGate(false);
+  if(msg) msg.textContent="";
+  await connectFirebaseSync();
+}
+function startCloudListener(){
+  if(!fbDb||fbUnsub) return;
+  firebaseReady=true;
+  fbDoc=fbDb.collection("financeiro").doc("familia");
+  fbUnsub=fbDoc.onSnapshot(snap=>{
+    const remote=snap.exists?snap.data():null;
+    const remoteUpdated=Number(remote?.updatedAt)||0;
+    const firstSync=!stateLoaded;
+    let changed=false;
+    if(remote&&remote.dataVersion===DATASET_VERSION&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
+    stateLoaded=true;
+    if(!snap.exists||remote?.dataVersion!==DATASET_VERSION||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
+    setSyncStatus("ok");
+  },err=>{
+    console.error(err);
+    const msg=document.getElementById("auth-msg");
+    if(msg) msg.textContent="Abriu localmente, mas não sincronizou. Ative login anônimo e confira as regras do Firestore.";
+    setSyncStatus("");
+  });
+}
+async function connectFirebaseSync(){
+  if(!isUnlocked()) return;
+  const ok=await ensureFirebaseReady();
+  if(!ok||!fbDb){
+    stateLoaded=true;
+    setSyncStatus("");
+    return;
+  }
+  try{
+    if(fbAuth&&!fbAuth.currentUser){
+      await fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+      await fbAuth.signInAnonymously();
+    }
+    fbUser=fbAuth?.currentUser||null;
+  }catch(err){
+    console.warn("Login anônimo indisponível; tentando Firestore direto",err);
+  }
+  startCloudListener();
+}
 function scheduleSave(){
   if(!appStarted||applyingRemote) return;
   const state=stateForCloud();
@@ -15882,20 +15950,13 @@ async function ensureFirebaseReady(){
   });
   return firebaseLoadPromise;
 }
-async function loginGoogle(){
-  const ok=await ensureFirebaseReady();
-  if(!ok||!fbAuth) return alert("Firebase ainda não carregou. Tente atualizar a página ou abrir pelo GitHub Pages.");
-  const provider=new firebase.auth.GoogleAuthProvider();
-  try{
-    await fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-    await fbAuth.signInWithPopup(provider);
-  }
-  catch(err){
-    document.getElementById("auth-msg").textContent="Não consegui entrar com Google. Verifique o provedor Google, domínio autorizado ou abra pelo GitHub Pages.";
-    console.error(err);
-  }
+function logoutFirebase(){
+  localStorage.removeItem(APP_UNLOCK_KEY);
+  if(fbUnsub){fbUnsub();fbUnsub=null;}
+  if(fbAuth) fbAuth.signOut().catch(()=>{});
+  setGate(true);
+  setSyncStatus("");
 }
-function logoutFirebase(){if(fbAuth) fbAuth.signOut();}
 function initFirebase(){
   if(fbAuth&&fbDb) return;
   if(!window.firebase?.auth||!window.firebase?.firestore) return;
@@ -15903,42 +15964,6 @@ function initFirebase(){
   fbAuth=firebase.auth();
   fbDb=firebase.firestore();
   try{fbAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(err){console.warn("Persistência local indisponível",err);}
-  fbAuth.onAuthStateChanged(async user=>{
-    fbUser=user;
-    stateLoaded=false;
-    if(fbUnsub){fbUnsub();fbUnsub=null;}
-    document.getElementById("auth-msg").textContent="";
-    if(!user){
-      document.getElementById("auth-gate").classList.remove("hidden");
-      document.getElementById("user-pill").classList.remove("active");
-      return;
-    }
-    const email=(user.email||"").toLowerCase();
-    if(!FIREBASE_ALLOWED_EMAILS.includes(email)){
-      document.getElementById("auth-msg").textContent="Este e-mail não tem acesso ao financeiro.";
-      await fbAuth.signOut();
-      return;
-    }
-    document.getElementById("auth-gate").classList.add("hidden");
-    document.getElementById("user-pill").classList.add("active");
-    document.getElementById("user-email").textContent=email;
-    firebaseReady=true;
-    fbDoc=fbDb.collection("financeiro").doc("familia");
-    fbUnsub=fbDoc.onSnapshot(snap=>{
-      const remote=snap.exists?snap.data():null;
-      const remoteUpdated=Number(remote?.updatedAt)||0;
-      const firstSync=!stateLoaded;
-      let changed=false;
-      if(remote&&remote.dataVersion===DATASET_VERSION&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
-      stateLoaded=true;
-      if(!snap.exists||remote?.dataVersion!==DATASET_VERSION||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
-      setSyncStatus("ok");
-    },err=>{
-      console.error(err);
-      document.getElementById("auth-msg").textContent="Não consegui sincronizar. Confira as regras do Firestore.";
-      setSyncStatus("");
-    });
-  });
 }
 window.addEventListener("beforeunload",()=>{
   const el=document.activeElement;
@@ -17090,9 +17115,9 @@ initPlanSelects();
 loadLocalState();
 renderAll();
 appStarted=true;
-initFirebase();
-setTimeout(ensureFirebaseReady,300);
-window.addEventListener("load",ensureFirebaseReady);
+setGate(!isUnlocked());
+if(isUnlocked()) setTimeout(connectFirebaseSync,300);
+window.addEventListener("load",()=>{if(isUnlocked()) connectFirebaseSync();});
 </script>
 </body>
 </html>
