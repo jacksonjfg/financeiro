@@ -1250,6 +1250,18 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   background:#fff;
   color:#526171;
 }
+.filter-main.has-filter{
+  background:#FFF4EB;
+  border-color:#FDBA74;
+  color:#EA580C;
+}
+.filter-period-label{
+  display:none;align-items:center;gap:5px;
+  min-height:34px;padding:0 10px;border:1px solid #DDE3EA;
+  border-radius:8px;background:#fff;color:#526171;
+  font-size:12px;font-weight:700;white-space:nowrap;
+}
+.filter-period-label.active{display:flex}
 .filter-modal{max-width:1100px}
 .filter-modal .modal-ttl{
   margin-bottom:18px;
@@ -1438,7 +1450,8 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
       <div class="sgrid" id="lanc-sum" style="grid-template-columns:repeat(3,1fr)"></div>
       <div class="tbl-wrap">
         <div class="fbar">
-          <button class="ico-btn filter-main" title="Filtros" onclick="openLancFilter()"><i class="ti ti-filter"></i></button>
+          <button class="ico-btn filter-main" id="lanc-filter-btn" title="Filtros" onclick="openLancFilter()"><i class="ti ti-filter"></i></button>
+          <span class="filter-period-label" id="lanc-filter-label"></span>
           <input id="busca" placeholder="Buscar..." oninput="renderLanc()">
           <select id="ftipo" onchange="renderLanc()"><option value="">Tipo</option><option value="despesa">Despesa</option><option value="receita">Receita</option></select>
           <select id="fcat" onchange="renderLanc()"><option value="">Categoria</option></select>
@@ -15667,6 +15680,1602 @@ let lancs=[
     "nparc": 12
   }
 ];
+const C6_JUNHO_2026_IMPORT=[
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Buonna Massa",
+    "valor": 117.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-01",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-01|2026-06-10|Lazer|Delivery|Buonna Massa|117.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "(sem descri??o)",
+    "valor": 253.37,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-01",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-01|2026-06-10|Transporte|Combustível|(sem descri??o)|253.37|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Globoplay",
+    "valor": 39.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-02",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-02|2026-06-10|Gastos Extras|Streamings|Globoplay|39.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pizza Time",
+    "valor": 73.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-02",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-02|2026-06-10|Lazer|Delivery|Pizza Time|73.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Churrascaria",
+    "valor": 231.44,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-02",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Restaurante",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-02|2026-06-10|Lazer|Restaurante|Churrascaria|231.44|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Lanche Zoo",
+    "valor": 38.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-02",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Restaurante",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-02|2026-06-10|Lazer|Restaurante|Lanche Zoo|38.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "ML - Itens Chácara",
+    "valor": 121.59,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-03|2026-06-10|Gastos Extras|Compras essenciais|ML - Itens Chácara|121.59|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Relógio Loh; Gasto Parcelado - Parcela 1/3",
+    "valor": 81.11,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras supérfluas",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "parcelado",
+    "importKey": "2026-05-03|2026-06-10|Gastos Extras|Compras supérfluas|Relógio Loh; Gasto Parcelado - Parcela 1/3|81.11|C6 Bank",
+    "parc": 1,
+    "nparc": 3
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Fluke",
+    "valor": 37.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-03|2026-06-10|Gastos Extras|Streamings|Fluke|37.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Padaria do Vovô",
+    "valor": 66.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-03|2026-06-10|Lazer|Cafeteria|Padaria do Vovô|66.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Posto Miragem",
+    "valor": 38.5,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-03|2026-06-10|Lazer|Cafeteria|Posto Miragem|38.50|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pague Menos",
+    "valor": 44.42,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-03",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Supérfluo",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-03|2026-06-10|Supermercado|Supérfluo|Pague Menos|44.42|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pague Menos",
+    "valor": 635.51,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-04",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-04|2026-06-10|Supermercado|Compras do Mês|Pague Menos|635.51|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "ML - Clarificante",
+    "valor": 24.99,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-05",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-05|2026-06-10|Gastos Extras|Compras essenciais|ML - Clarificante|24.99|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Vacinas Lua; Gasto Parcelado - Parcela 1/2",
+    "valor": 90.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-05",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Sol (pet)",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "parcelado",
+    "importKey": "2026-05-05|2026-06-10|Gastos Extras|Sol (pet)|Vacinas Lua; Gasto Parcelado - Parcela 1/2|90.00|C6 Bank",
+    "parc": 1,
+    "nparc": 2
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "ML - Ferro Stella",
+    "valor": 64.93,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-05",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Meninas A.S",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-05|2026-06-10|Pessoais|Meninas A.S|ML - Ferro Stella|64.93|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "ML - Ômega 3",
+    "valor": 58.88,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-05",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Suplementos",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-05|2026-06-10|Saúde|Suplementos|ML - Ômega 3|58.88|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Gygabon",
+    "valor": 27.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-06",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-06|2026-06-10|Lazer|Cafeteria|Gygabon|27.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Sorvete Gigabom",
+    "valor": 27.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-06",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-06|2026-06-10|Lazer|Cafeteria|Sorvete Gigabom|27.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "água de coco",
+    "valor": 16.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-06",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-06|2026-06-10|Supermercado|Compras do Mês|água de coco|16.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Tallow Caro pra porra",
+    "valor": 234.64,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-07",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Produtos Naturais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-07|2026-06-10|Saúde|Produtos Naturais|Tallow Caro pra porra|234.64|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Fluke",
+    "valor": 37.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-08",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-08|2026-06-10|Gastos Extras|Streamings|Fluke|37.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Buonna Massa",
+    "valor": 87.4,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-08",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-08|2026-06-10|Lazer|Delivery|Buonna Massa|87.40|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Jardim São Pedro",
+    "valor": 119.58,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-09",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-09|2026-06-10|Supermercado|Compras do Mês|Jardim São Pedro|119.58|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "(sem descri??o)",
+    "valor": 66.21,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-09",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-09|2026-06-10|Transporte|Combustível|(sem descri??o)|66.21|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Nota 10",
+    "valor": 66.21,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-09",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-09|2026-06-10|Transporte|Combustível|Nota 10|66.21|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Zuleika",
+    "valor": 49.34,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Lazer|Cafeteria|Zuleika|49.34|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Zuleikas",
+    "valor": 49.34,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Lazer|Cafeteria|Zuleikas|49.34|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "(sem descri??o)",
+    "valor": 29.99,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Saúde|Farmácia|(sem descri??o)|29.99|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "(sem descri??o)",
+    "valor": 108.28,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Saúde|Farmácia|(sem descri??o)|108.28|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogal",
+    "valor": 108.28,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Saúde|Farmácia|Drogal|108.28|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Farmácia Estância",
+    "valor": 29.99,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-10",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-10|2026-06-10|Saúde|Farmácia|Farmácia Estância|29.99|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "; Gasto Parcelado - Parcela 1/2",
+    "valor": 109.91,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-11",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "parcelado",
+    "importKey": "2026-05-11|2026-06-10|Saúde|Farmácia|; Gasto Parcelado - Parcela 1/2|109.91|C6 Bank",
+    "parc": 1,
+    "nparc": 2
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Droga Raia; Gasto Parcelado - Parcela 1/2",
+    "valor": 109.92,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-11",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "parcelado",
+    "importKey": "2026-05-11|2026-06-10|Saúde|Farmácia|Droga Raia; Gasto Parcelado - Parcela 1/2|109.92|C6 Bank",
+    "parc": 1,
+    "nparc": 2
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Jardim São Pedro",
+    "valor": 58.71,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-11",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-11|2026-06-10|Supermercado|Compras do Mês|Jardim São Pedro|58.71|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Jardim São Pedro",
+    "valor": 119.58,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-11",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-11|2026-06-10|Supermercado|Compras do Mês|Jardim São Pedro|119.58|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Leitão",
+    "valor": 15.22,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-11",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-11|2026-06-10|Supermercado|Compras do Mês|Leitão|15.22|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pizza Time",
+    "valor": 84.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-13",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-13|2026-06-10|Lazer|Delivery|Pizza Time|84.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Fraldas",
+    "valor": 166.15,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-13",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Meninas A.S",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-13|2026-06-10|Pessoais|Meninas A.S|Fraldas|166.15|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Enxaguante natural etc",
+    "valor": 151.83,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-13",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-13|2026-06-10|Supermercado|Compras do Mês|Enxaguante natural etc|151.83|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Scoton",
+    "valor": 100.59,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-13",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-13|2026-06-10|Supermercado|Compras do Mês|Scoton|100.59|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Varejão do Carlão",
+    "valor": 39.8,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-13",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-13|2026-06-10|Supermercado|Compras do Mês|Varejão do Carlão|39.80|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Lucélia Floricultura",
+    "valor": 60.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Gastos Extras|Compras essenciais|Lucélia Floricultura|60.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Agrovip coleira",
+    "valor": 17.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Sol (pet)",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Gastos Extras|Sol (pet)|Agrovip coleira|17.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogal",
+    "valor": 26.65,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Saúde|Farmácia|Drogal|26.65|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogaria Estância",
+    "valor": 69.78,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Saúde|Farmácia|Drogaria Estância|69.78|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Caminhão de Gás e Água",
+    "valor": 33.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Supermercado|Compras do Mês|Caminhão de Gás e Água|33.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Nota 10",
+    "valor": 130.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-14",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-14|2026-06-10|Transporte|Combustível|Nota 10|130.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Compras Jack ML; Gasto Parcelado - Parcela 1/2",
+    "valor": 170.95,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-15",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "parcelado",
+    "importKey": "2026-05-15|2026-06-10|Gastos Extras|Compras essenciais|Compras Jack ML; Gasto Parcelado - Parcela 1/2|170.95|C6 Bank",
+    "parc": 1,
+    "nparc": 2
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Droga Raia",
+    "valor": 108.58,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-15",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-15|2026-06-10|Saúde|Farmácia|Droga Raia|108.58|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Empório 4 Estações",
+    "valor": 25.8,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-15",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-15|2026-06-10|Supermercado|Compras do Mês|Empório 4 Estações|25.80|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Scoton",
+    "valor": 22.99,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-15",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-15|2026-06-10|Supermercado|Compras do Mês|Scoton|22.99|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Buonna Massa",
+    "valor": 86.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-16",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-16|2026-06-10|Lazer|Delivery|Buonna Massa|86.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogal",
+    "valor": 55.47,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-16",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-16|2026-06-10|Saúde|Farmácia|Drogal|55.47|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogal",
+    "valor": 213.02,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-17",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-17|2026-06-10|Saúde|Farmácia|Drogal|213.02|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Farmácia Drogal",
+    "valor": 15.91,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-18",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-18|2026-06-10|Saúde|Farmácia|Farmácia Drogal|15.91|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Mercado Livre brinco Stella + algodão",
+    "valor": 109.22,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-19",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Meninas A.S",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-19|2026-06-10|Pessoais|Meninas A.S|Mercado Livre brinco Stella + algodão|109.22|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pediatra Stella; Gasto Recorrente - Mês 6/2026",
+    "valor": 600.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-19",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Pediatra",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "recorrente",
+    "importKey": "2026-05-19|2026-06-10|Saúde|Pediatra|Pediatra Stella; Gasto Recorrente - Mês 6/2026|600.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Combustível",
+    "valor": 50.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-19",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-19|2026-06-10|Transporte|Combustível|Combustível|50.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Meli+",
+    "valor": 74.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-20",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-20|2026-06-10|Gastos Extras|Streamings|Meli+|74.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Supermercado Jardim São Pedro",
+    "valor": 72.23,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-20",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-20|2026-06-10|Supermercado|Compras do Mês|Supermercado Jardim São Pedro|72.23|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Drogal",
+    "valor": 109.2,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-21",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Saúde",
+    "sub": "Farmácia",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-21|2026-06-10|Saúde|Farmácia|Drogal|109.20|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Google One",
+    "valor": 9.99,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-23",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-23|2026-06-10|Gastos Extras|Streamings|Google One|9.99|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Fraldas",
+    "valor": 64.25,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-23",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Meninas A.S",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-23|2026-06-10|Pessoais|Meninas A.S|Fraldas|64.25|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Supermercado Jardim São Pedro",
+    "valor": 304.72,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-23",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-23|2026-06-10|Supermercado|Compras do Mês|Supermercado Jardim São Pedro|304.72|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Supermercado Scoton",
+    "valor": 44.15,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-23",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-23|2026-06-10|Supermercado|Compras do Mês|Supermercado Scoton|44.15|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Posto São Paulo",
+    "valor": 50.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-23",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-23|2026-06-10|Transporte|Combustível|Posto São Paulo|50.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Compra ML - Terços Festa Nações",
+    "valor": 39.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-24",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-24|2026-06-10|Gastos Extras|Compras essenciais|Compra ML - Terços Festa Nações|39.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Buonna Massa",
+    "valor": 109.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-24",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Delivery",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-24|2026-06-10|Lazer|Delivery|Buonna Massa|109.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Claret Papelaria",
+    "valor": 30.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-25",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras supérfluas",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-25|2026-06-10|Gastos Extras|Compras supérfluas|Claret Papelaria|30.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Amazon Prime",
+    "valor": 19.9,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-25",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Streamings",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-25|2026-06-10|Gastos Extras|Streamings|Amazon Prime|19.90|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Scoton",
+    "valor": 44.96,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-25",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-25|2026-06-10|Supermercado|Compras do Mês|Scoton|44.96|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Texaco",
+    "valor": 25.04,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-27",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-27|2026-06-10|Lazer|Cafeteria|Texaco|25.04|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Mini Mercado Central",
+    "valor": 47.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-27",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-27|2026-06-10|Supermercado|Compras do Mês|Mini Mercado Central|47.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Posto São Paulo",
+    "valor": 50.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-27",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-27|2026-06-10|Transporte|Combustível|Posto São Paulo|50.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Guia Protocolos (ebook)",
+    "valor": 67.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-28",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-28|2026-06-10|Gastos Extras|Compras essenciais|Guia Protocolos (ebook)|67.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pizzaria Bon Giovanni",
+    "valor": 93.39,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-28",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Restaurante",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-28|2026-06-10|Lazer|Restaurante|Pizzaria Bon Giovanni|93.39|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Supermercado Jardim São Pedro",
+    "valor": 76.2,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-28",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-28|2026-06-10|Supermercado|Compras do Mês|Supermercado Jardim São Pedro|76.20|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Jardim São Pedro",
+    "valor": 22.49,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-29",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-29|2026-06-10|Supermercado|Compras do Mês|Jardim São Pedro|22.49|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Floricultura Arranjo",
+    "valor": 25.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras essenciais",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Gastos Extras|Compras essenciais|Floricultura Arranjo|25.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Cândida",
+    "valor": 71.5,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Gastos Extras",
+    "sub": "Compras supérfluas",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Gastos Extras|Compras supérfluas|Cândida|71.50|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Caldo de Cana",
+    "valor": 12.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Lazer|Cafeteria|Caldo de Cana|12.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Pastel",
+    "valor": 40.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Lazer",
+    "sub": "Cafeteria",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Lazer|Cafeteria|Pastel|40.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Osteopata João",
+    "valor": 160.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Meninas A.S",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Pessoais|Meninas A.S|Osteopata João|160.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Sobrancelha",
+    "valor": 46.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Pessoais",
+    "sub": "Salão/Beleza",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Pessoais|Salão/Beleza|Sobrancelha|46.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Mel Feira",
+    "valor": 18.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Supermercado|Compras do Mês|Mel Feira|18.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Posto São Paulo",
+    "valor": 50.0,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-30",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Transporte",
+    "sub": "Combustível",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-30|2026-06-10|Transporte|Combustível|Posto São Paulo|50.00|C6 Bank"
+  },
+  {
+    "tipo": "despesa",
+    "ctx": "pessoal",
+    "desc": "Jardim São Pedro",
+    "valor": 49.79,
+    "data": "2026-06-10",
+    "dataEvento": "2026-05-31",
+    "mes": 6,
+    "ano": 2026,
+    "cat": "Supermercado",
+    "sub": "Compras do Mês",
+    "inst": "C6 Bank",
+    "cartId": "c1",
+    "cart": "C6 Bank",
+    "status": "concluido",
+    "lt": "unico",
+    "importKey": "2026-05-31|2026-06-10|Supermercado|Compras do Mês|Jardim São Pedro|49.79|C6 Bank"
+  }
+];
 let recs=[];
 let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026;
 let expSubs={};
@@ -15839,6 +17448,30 @@ function normalizeFinanceState(){
 function isUsableSavedState(data){
   return !!(data&&data.dataVersion===DATASET_VERSION&&Array.isArray(data.lancs)&&data.lancs.length>=MIN_VALID_LANCS);
 }
+
+
+function lancImportKey(l){
+  const desc=String(l.desc||"").trim()||"(sem descri??o)";
+  const valor=(Math.round((Number(l.valor)||0)*100)/100).toFixed(2);
+  return [String(l.dataEvento||l.data||"").slice(0,10),String(l.data||"").slice(0,10),l.cat||"",l.sub||"",desc,valor,l.cart||l.inst||""].join("|");
+}
+function ensureC6JuneImports(){
+  if(!Array.isArray(C6_JUNHO_2026_IMPORT)||!C6_JUNHO_2026_IMPORT.length) return false;
+  const existing=new Set(lancs.map(l=>l.importKey||lancImportKey(l)));
+  let changed=false;
+  for(const item of C6_JUNHO_2026_IMPORT){
+    const key=item.importKey||lancImportKey(item);
+    if(existing.has(key)) continue;
+    lancs.push({id:nid++,...item,importKey:key});
+    existing.add(key);
+    changed=true;
+  }
+  if(changed){
+    hydrateCatsFromRealData();
+    normalizeCatLists();
+  }
+  return changed;
+}
 function setSyncStatus(status){
   const dot=document.getElementById("sync-dot");
   if(!dot) return;
@@ -15887,6 +17520,8 @@ function startCloudListener(){
     const firstSync=!stateLoaded;
     let changed=false;
     if(remote&&isUsableSavedState(remote)&&(firstSync||remoteUpdated>=lastLocalUpdatedAt)) changed=applyCloudState(remote);
+    const importChanged=ensureC6JuneImports();
+    if(importChanged){changed=true;renderAll();}
     stateLoaded=true;
     if(!snap.exists||!isUsableSavedState(remote)||changed||(!firstSync&&lastLocalUpdatedAt>remoteUpdated)) scheduleSave();
     setSyncStatus("ok");
@@ -16556,7 +18191,7 @@ function setLancMes(m){
 }
 function openLancFilter(){
   const yr=parseInt(document.getElementById("lanc-yr").value);
-  const base=lancs.filter(l=>(l.ano===yr||lancFilter.dateFrom||lancFilter.dateTo)&&(cLanc==="todos"||l.ctx===cLanc));
+  const base=lancs.filter(l=>(l.ano===yr||hasPeriodFilter())&&(cLanc==="todos"||l.ctx===cLanc));
   const setOpts=(id,vals,label)=>{document.getElementById(id).innerHTML=`<option value="">${label}</option>`+[...new Set(vals.filter(Boolean))].sort().map(v=>`<option value="${v}">${v}</option>`).join("")};
   setOpts("flt-cat",base.map(l=>l.cat),"Selecione...");
   setOpts("flt-sub",base.map(l=>l.sub),"Selecione...");
@@ -16575,6 +18210,35 @@ function openLancFilter(){
   document.getElementById("flt-date-from").value=lancFilter.dateFrom;
   document.getElementById("flt-date-to").value=lancFilter.dateTo;
   document.getElementById("modal-filter").classList.remove("hidden");
+}
+function brDate(d){
+  if(!d) return "";
+  const p=String(d).slice(0,10).split("-");
+  return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;
+}
+function hasAdvancedLancFilter(){
+  return !!(lancFilter.tipo||lancFilter.cat||lancFilter.sub||lancFilter.cart||lancFilter.inst||lancFilter.status||lancFilter.desc||lancFilter.value||lancFilter.dateFrom||lancFilter.dateTo);
+}
+function updateLancFilterLabel(){
+  const lbl=document.getElementById("lanc-filter-label");
+  const btn=document.getElementById("lanc-filter-btn");
+  if(!lbl||!btn) return;
+  const active=hasAdvancedLancFilter();
+  btn.classList.toggle("has-filter",active);
+  if(!active){
+    lbl.classList.remove("active");
+    lbl.textContent="";
+    return;
+  }
+  const parts=[];
+  if(lancFilter.dateFrom||lancFilter.dateTo){
+    const tipo=lancFilter.dateType==="dataEvento"?"Evento":"Efetivação";
+    parts.push(`${tipo}: ${brDate(lancFilter.dateFrom)||"início"} até ${brDate(lancFilter.dateTo)||"hoje"}`);
+  }
+  const extra=[lancFilter.tipo,lancFilter.cat,lancFilter.sub,lancFilter.cart,lancFilter.inst,lancFilter.status,lancFilter.desc].filter(Boolean).length+(lancFilter.value?1:0);
+  if(extra) parts.push(`${extra} filtro${extra>1?"s":""}`);
+  lbl.innerHTML=`<i class="ti ti-calendar-search"></i> ${parts.join(" · ")}`;
+  lbl.classList.add("active");
 }
 function applyLancFilter(){
   lancFilter={
@@ -16609,7 +18273,34 @@ function sortLanc(key){
 function hasPeriodFilter(){
   return !!(lancFilter.dateFrom||lancFilter.dateTo);
 }
+function lancMatchesAdvancedFilter(l){
+  if(lancFilter.tipo&&l.tipo!==lancFilter.tipo) return false;
+  if(lancFilter.cat&&l.cat!==lancFilter.cat) return false;
+  if(lancFilter.sub&&l.sub!==lancFilter.sub) return false;
+  if(lancFilter.cart&&l.cart!==lancFilter.cart) return false;
+  if(lancFilter.inst&&l.inst!==lancFilter.inst) return false;
+  if(lancFilter.status&&l.status!==lancFilter.status) return false;
+  if(lancFilter.desc&&!String(l.desc||"").toLowerCase().includes(lancFilter.desc.toLowerCase())) return false;
+  if(lancFilter.value){
+    const fv=parseFloat(lancFilter.value);
+    if(!isNaN(fv)){
+      const val=Number(l.valor)||0;
+      if(lancFilter.op==="gt"&&!(val>fv)) return false;
+      if(lancFilter.op==="lt"&&!(val<fv)) return false;
+      if(lancFilter.op==="eq"&&!(Math.abs(val-fv)<0.01)) return false;
+    }
+  }
+  if(lancFilter.dateFrom||lancFilter.dateTo){
+    const key=lancFilter.dateType==="dataEvento"?"dataEvento":"data";
+    const dt=String(l[key]||l.data||"").slice(0,10);
+    if(!dt) return false;
+    if(lancFilter.dateFrom&&dt<lancFilter.dateFrom) return false;
+    if(lancFilter.dateTo&&dt>lancFilter.dateTo) return false;
+  }
+  return true;
+}
 function renderLanc(){
+  updateLancFilterLabel();
   // chips — 1 por vez
   document.getElementById("lanc-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${lancMes===m?"active":""}" onclick="setLancMes(${m})">${MN[m]}</div>`).join("");
@@ -16627,26 +18318,7 @@ function renderLanc(){
   if(ftipo) d=d.filter(l=>l.tipo===ftipo);
   if(fcat) d=d.filter(l=>l.cat===fcat);
   if(fst) d=d.filter(l=>l.status===fst);
-  if(lancFilter.tipo) d=d.filter(l=>l.tipo===lancFilter.tipo);
-  if(lancFilter.cat) d=d.filter(l=>l.cat===lancFilter.cat);
-  if(lancFilter.sub) d=d.filter(l=>l.sub===lancFilter.sub);
-  if(lancFilter.cart) d=d.filter(l=>l.cart===lancFilter.cart);
-  if(lancFilter.inst) d=d.filter(l=>l.inst===lancFilter.inst);
-  if(lancFilter.status) d=d.filter(l=>l.status===lancFilter.status);
-  if(lancFilter.desc) d=d.filter(l=>l.desc.toLowerCase().includes(lancFilter.desc.toLowerCase()));
-  if(lancFilter.value){
-    const fv=parseFloat(lancFilter.value);
-    if(!isNaN(fv)) d=d.filter(l=>lancFilter.op==="gt"?l.valor>fv:lancFilter.op==="lt"?l.valor<fv:Math.abs(l.valor-fv)<0.01);
-  }
-  if(lancFilter.dateFrom||lancFilter.dateTo){
-    const key=lancFilter.dateType==="dataEvento"?"dataEvento":"data";
-    d=d.filter(l=>{
-      const dt=(l[key]||l.data||"").slice(0,10);
-      if(lancFilter.dateFrom&&dt<lancFilter.dateFrom) return false;
-      if(lancFilter.dateTo&&dt>lancFilter.dateTo) return false;
-      return true;
-    });
-  }
+  d=d.filter(lancMatchesAdvancedFilter);
   d.sort((a,b)=>{
     const av=(a[lancSort.key]||a.data||"");
     const bv=(b[lancSort.key]||b.data||"");
@@ -17135,9 +18807,11 @@ normalizeFinanceState();
 normalizeCatLists();
 initPlanSelects();
 loadLocalState();
+const importedC6OnBoot=ensureC6JuneImports();
 cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
 appStarted=true;
+if(importedC6OnBoot) saveLocalState(stateForCloud());
 setGate(!isUnlocked());
 if(isUnlocked()) setTimeout(connectFirebaseSync,300);
 window.addEventListener("load",()=>{if(isUnlocked()) connectFirebaseSync();});
