@@ -1336,7 +1336,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 </style>
 </head>
 <body>
-<div class="auth-gate" id="auth-gate">
+<div class="auth-gate hidden" id="auth-gate">
   <div class="auth-card">
     <div class="auth-mark"><i class="ti ti-flame"></i></div>
     <h1>Financeiro</h1>
@@ -1375,7 +1375,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div class="sp"></div>
     <button class="btn-g" onclick="openCatsModal()"><i class="ti ti-tags"></i> Categorias</button>
     <button class="btn-g" onclick="openInstModal()"><i class="ti ti-building-bank"></i> Instituições</button>
-    <div class="user-pill" id="user-pill"><span class="sync-dot" id="sync-dot"></span><span id="user-email"></span><button onclick="logoutFirebase()" title="Sair"><i class="ti ti-logout"></i></button></div>
+    <div class="user-pill" id="user-pill"><span class="sync-dot" id="sync-dot"></span><span id="user-email"></span></div>
     <button class="btn-g" onclick="exportar()"><i class="ti ti-download"></i> Exportar CSV</button>
     <button class="btn-p" onclick="abrirModalLanc()"><i class="ti ti-plus"></i> Lançamento</button>
   </div>
@@ -27806,8 +27806,12 @@ initPlanSelects();
 loadLocalState();
 renderAll();
 appStarted=true;
-initFirebase();
+document.getElementById("auth-gate")?.classList.add("hidden");
+stateLoaded=true;
+setSyncStatus("");
 </script>
 </body>
 </html>
+
+
 
