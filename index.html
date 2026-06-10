@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -1359,6 +1359,87 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 }
 .sync-dot.ok{background:var(--grn);box-shadow:0 0 0 3px rgba(52,199,89,.14)}
 .sync-dot.saving{background:var(--am);box-shadow:0 0 0 3px rgba(255,149,0,.16)}
+
+/* Mobile experience: isolated overrides; desktop remains unchanged. */
+.top-actions{display:contents}
+@media (max-width:760px){
+  :root{--mobile-nav-h:68px}
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{padding-bottom:env(safe-area-inset-bottom)}
+  button,input,select,textarea{font-size:16px}
+  button,.btn-g,.btn-p,.stats-toggle,.fbtn,.pay-btn,.hide-pend-btn{min-height:42px}
+  .shell{min-height:100dvh;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));overflow:visible}
+  .main{width:100%;min-width:0;overflow:visible}
+  .content{width:100%;min-width:0;padding:12px 10px 18px;gap:12px}
+  .page{min-width:0;gap:12px}
+  .sidebar{position:fixed;left:0;right:0;top:auto;bottom:0;z-index:300;width:100%;height:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));padding:0 6px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border:0;border-top:1px solid #dce4ec;box-shadow:0 -6px 22px rgba(28,44,64,.09);backdrop-filter:blur(12px)}
+  .logo,.sidebar .nav-lbl,.sidebar .sb-ft{display:none!important}
+  .sidebar .nav-sec{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%;height:100%;padding:4px 0;gap:3px;overflow:visible}
+  .sidebar .nav-it{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:56px;margin:0;padding:4px 2px;border-radius:8px;font-size:10px;line-height:1.1;text-align:center;white-space:normal}
+  .sidebar .nav-it i{font-size:20px;line-height:1}
+  .sidebar .nav-it.active{background:#fff2e9;color:#d94f00}
+  .sidebar .nav-it.active:before{display:none}
+  .topbar{position:sticky;top:0;z-index:220;display:block;width:100%;height:auto;min-height:0;padding:9px 10px 8px;background:rgba(255,255,255,.97);border-bottom:1px solid #dce4ec;box-shadow:0 4px 14px rgba(28,44,64,.06);backdrop-filter:blur(12px);overflow:hidden}
+  .topbar .pg-title{display:block;width:100%;margin:0 0 7px;padding:0 2px;font-size:17px;line-height:1.25}
+  .topbar .sp{display:none}
+  .top-actions{display:flex;align-items:center;gap:7px;width:100%;padding:0 1px 2px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .top-actions::-webkit-scrollbar{display:none}
+  .top-actions .btn-g,.top-actions .btn-p,.top-actions .user-pill{flex:0 0 auto;width:auto;min-width:max-content;min-height:40px;margin:0;padding:8px 11px;font-size:12px}
+  .top-actions .user-pill{display:flex;max-width:220px;overflow:hidden}
+  .top-actions #user-email{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ctrl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:8px;padding:9px}
+  .ctrl>.seg,.ctrl>.plan-period-row,.ctrl>.mchips{grid-column:1/-1;width:100%;min-width:0}
+  .ctrl>.stats-toggle{width:100%;min-width:0;padding:7px 8px;justify-content:center;white-space:normal}
+  .seg{display:flex;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .seg .sb{flex:1 0 auto;min-height:40px;padding:7px 9px}
+  .plan-period-row{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .plan-period-row #plan-yr{grid-column:1/-1}
+  .period-sep{display:none}
+  .yrsel{width:100%;min-width:0;min-height:42px}
+  .mchips{display:flex;flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .mchips::-webkit-scrollbar{display:none}
+  .sgrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+  .sc{min-width:0;padding:12px 11px;border-radius:9px}
+  .sc-lbl{font-size:9px}
+  .sc-val{font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+  .sc-sub{white-space:normal}
+  .plan-tbl-outer{width:100%!important;max-width:100%;margin:0;border-radius:10px;overflow:hidden}
+  .plan-tbl-scroll,#lanc-body,#rec-body,.table-scroll{max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .ptbl{font-size:11px}
+  .th-fix,.fix-cell{width:148px;min-width:148px;padding-left:9px;padding-right:8px}
+  .th-mes-grp{width:166px;min-width:166px}
+  .th-stats-grp{width:180px;min-width:180px}
+  .th-stats-cols,.td-stats{grid-template-columns:repeat(3,60px)}
+  .td-plan,.td-real{padding:8px 7px}
+  .fix-inner,.row-cat .fix-inner,.row-sub .fix-inner{white-space:normal;line-height:1.25}
+  .fbar{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:9px;align-items:center}
+  .fbar #busca{grid-column:1/-1;width:100%;min-height:44px}
+  .fbar #ftipo,.fbar #fcat,.fbar #fst{display:none}
+  .fbar .filter-trigger,.fbar .filter-main{grid-column:1;grid-row:2;width:44px;min-width:44px;padding:0;justify-content:center}
+  .fbar .filter-period-label{grid-column:2;grid-row:2;min-width:0;margin:0;white-space:normal;line-height:1.25}
+  .dt{min-width:720px;font-size:11px}
+  .dt th,.dt td{padding:10px 8px}
+  .cardgrid{grid-template-columns:1fr!important;gap:10px}
+  .card{min-width:0}
+  .pend-day-head{padding:12px 11px}
+  .pend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;padding:10px 9px;align-items:center}
+  .pdesc{min-width:0;white-space:normal;line-height:1.25}
+  .pdate{white-space:nowrap}
+  .overlay{align-items:flex-end;padding:0}
+  .modal,.filter-modal{width:100%;max-width:none;max-height:92dvh;margin:0;padding:18px 15px calc(16px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;overflow:auto}
+  .modal h2{font-size:17px}
+  .f2,.filter-grid,.cat-cols{grid-template-columns:1fr!important;gap:10px}
+  .filter-grid>*{grid-column:1/-1!important}
+  .cat-box{height:190px}
+  .fact{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom));z-index:3;margin:8px -15px calc(-16px - env(safe-area-inset-bottom));padding:11px 15px calc(11px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e3e9ef}
+  .fact button{flex:1;justify-content:center}
+}
+@media (max-width:380px){
+  .sgrid{grid-template-columns:1fr!important}
+  .th-fix,.fix-cell{width:136px;min-width:136px}
+  .top-actions .btn-g,.top-actions .btn-p{padding-left:9px;padding-right:9px}
+}
 </style>
 </head>
 <body>
@@ -1400,11 +1481,13 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   <div class="topbar">
     <span class="pg-title" id="pg-title">Planejamento e Controle</span>
     <div class="sp"></div>
+    <div class="top-actions">
     <button class="btn-g" onclick="openCatsModal()"><i class="ti ti-tags"></i> Categorias</button>
     <button class="btn-g" onclick="openInstModal()"><i class="ti ti-building-bank"></i> Instituições</button>
     <div class="user-pill" id="user-pill"><span class="sync-dot" id="sync-dot"></span><span id="user-email"></span><button onclick="logoutFirebase()" title="Sair"><i class="ti ti-logout"></i></button></div>
     <button class="btn-g" onclick="exportarBackup()"><i class="ti ti-database-export"></i> Backup</button><button class="btn-g" onclick="document.getElementById('backup-import').click()"><i class="ti ti-database-import"></i> Restaurar</button><input id="backup-import" type="file" accept="application/json,.json" style="display:none" onchange="importarBackup(event)"><button class="btn-g" onclick="exportar()"><i class="ti ti-download"></i> Exportar CSV</button>
     <button class="btn-p" onclick="abrirModalLanc()"><i class="ti ti-plus"></i> Lançamento</button>
+    </div>
   </div>
   <div class="content">
 
