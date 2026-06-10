@@ -17324,18 +17324,25 @@ function statsHtml(st){
   const vals=st?[st.mn,st.md,st.mx]:[0,0,0];
   return `<td class="stats-cell"><div class="td-stats">${vals.map((v,i)=>`<div class="td-stat ${v>0?"":"val-empty"}" title="${labels[i]}"><span>${labels[i]}</span><strong>${v>0?fmt(v):"—"}</strong></div>`).join("")}</div></td>`;
 }
-function getP(yr,m,ctx,cat){return PLAN[yr]?.[m]?.[ctx]?.[cat]||0}
+const PLAN_CAT_ALIASES={
+  "PJ Aluma":"PJ ALUMA",
+  "Alimentação":"Supermercado",
+  "Pessoal":"Pessoais",
+  "Streamings":"Gastos Extras"
+};
+function canonicalPlanCat(cat){return PLAN_CAT_ALIASES[cat]||cat}
+function getP(yr,m,ctx,cat){return PLAN[yr]?.[m]?.[ctx]?.[canonicalPlanCat(cat)]||0}
 function isReceitaCat(cat){return cat==="Receita"}
 function getPlanCatsForMode(yr,ctxs,mode){
   const cats=new Set();
   for(const ctx of ctxs){
     const localCats=CATS?.[ctx]?.[mode]||{};
-    Object.keys(localCats).forEach(c=>cats.add(c));
+    Object.keys(localCats).forEach(c=>cats.add(canonicalPlanCat(c)));
   }
   for(const l of lancs){
     if(l.ano!=yr||l.tipo!==mode) continue;
     if(!ctxs.includes(l.ctx)) continue;
-    cats.add(l.cat);
+    cats.add(canonicalPlanCat(l.cat));
   }
   return [...cats];
 }
@@ -17346,6 +17353,7 @@ function getPlanSum(yr,m,ctxs,mode){
   },0);
 }
 function setP(yr,m,ctx,cat,v){
+  cat=canonicalPlanCat(cat);
   if(!PLAN[yr]) PLAN[yr]={};
   if(!PLAN[yr][m]) PLAN[yr][m]={pessoal:{},pj:{}};
   if(!PLAN[yr][m][ctx]) PLAN[yr][m][ctx]={};
@@ -17419,6 +17427,7 @@ function loadLocalState(){
     const best=getSavedStateCandidates()[0];
     if(!best) return false;
     lastLocalUpdatedAt=Number(best.data.updatedAt)||0;
+    try{localStorage.setItem(LOCAL_BACKUP_PREFIX+"pre-migracao-"+Date.now(),JSON.stringify(best.data));pruneLocalBackups();}catch(err){}
     applyCloudState(best.data);
     saveLocalState({...best.data,updatedAt:lastLocalUpdatedAt||Date.now()});
     return true;
@@ -17448,8 +17457,65 @@ function applyCloudState(data){
   try{localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify({...data,dataVersion:DATASET_VERSION}));lastLocalUpdatedAt=Number(data.updatedAt)||lastLocalUpdatedAt;}catch(err){}
   return changed;
 }
-function normalizeFinanceState(){
+function normalizePlanAliases(){
   let changed=false;
+  const movePlanBucket=bucket=>{
+    if(!bucket||typeof bucket!=="object") return;
+    for(const [from,to] of Object.entries(PLAN_CAT_ALIASES)){
+      if(!(from in bucket)) continue;
+      if(!(to in bucket) || !Number(bucket[to])) bucket[to]=Number(bucket[from])||0;
+      delete bucket[from];
+      changed=true;
+    }
+  };
+  for(const y of Object.keys(PLAN||{})){
+    for(const m of Object.keys(PLAN[y]||{})){
+      for(const ctx of Object.keys(PLAN[y][m]||{})) movePlanBucket(PLAN[y][m][ctx]);
+    }
+  }
+  for(const y of Object.keys(PLAN_SUB||{})){
+    for(const m of Object.keys(PLAN_SUB[y]||{})){
+      for(const ctx of Object.keys(PLAN_SUB[y][m]||{})){
+        const bucket=PLAN_SUB[y][m][ctx]||{};
+        for(const [from,to] of Object.entries(PLAN_CAT_ALIASES)){
+          if(!(from in bucket)) continue;
+          if(!(to in bucket)) bucket[to]=bucket[from];
+          delete bucket[from];
+          changed=true;
+        }
+      }
+    }
+  }
+
+  // Versões antigas salvavam o planejamento de PJ ALUMA em "pessoal"
+  // quando o valor era editado pela aba Consolidado. Move para o contexto correto.
+  for(const y of Object.keys(PLAN||{})){
+    for(const m of Object.keys(PLAN[y]||{})){
+      const month=PLAN[y][m]||{};
+      month.pessoal=month.pessoal||{};
+      month.pj=month.pj||{};
+      if(Object.prototype.hasOwnProperty.call(month.pessoal,"PJ ALUMA")){
+        month.pj["PJ ALUMA"]=Number(month.pessoal["PJ ALUMA"])||0;
+        delete month.pessoal["PJ ALUMA"];
+        changed=true;
+      }
+    }
+  }
+  for(const y of Object.keys(PLAN_SUB||{})){
+    for(const m of Object.keys(PLAN_SUB[y]||{})){
+      const month=PLAN_SUB[y][m]||{};
+      month.pessoal=month.pessoal||{};
+      month.pj=month.pj||{};
+      if(Object.prototype.hasOwnProperty.call(month.pessoal,"PJ ALUMA")){
+        month.pj["PJ ALUMA"]=month.pessoal["PJ ALUMA"];
+        delete month.pessoal["PJ ALUMA"];
+        changed=true;
+      }
+    }
+  }
+  return changed;
+}function normalizeFinanceState(){
+  let changed=normalizePlanAliases();
   const deduped=[];
   const byKey=new Map();
   for(const raw of lancs){
@@ -18068,14 +18134,15 @@ function renderPlan(){
 function updPcat(yr,m,cat,val){
   const n=parseMoney(val);
   if(isNaN(n)||n<0) return;
-  const ctx=cPlan==="pj"?"pj":"pessoal";
+  const ctx=editCtxForCat(cat);
   setP(yr,m,ctx,cat,n);
   renderPlan();
 }
 function toggleSub(k){expSubs[k]=!expSubs[k];renderPlan();}
 function updP(yr,m,ctx,cat,val){const n=parseMoney(val);if(!isNaN(n)&&n>=0) setP(yr,m,ctx,cat,n);renderPlan();}
-function getSP(yr,m,ctx,cat,sub){return PLAN_SUB?.[yr]?.[m]?.[ctx]?.[cat]?.[sub]||0}
+function getSP(yr,m,ctx,cat,sub){cat=canonicalPlanCat(cat);return PLAN_SUB?.[yr]?.[m]?.[ctx]?.[cat]?.[sub]||0}
 function setSP(yr,m,ctx,cat,sub,val){
+  cat=canonicalPlanCat(cat);
   if(!PLAN_SUB[yr]) PLAN_SUB[yr]={};
   if(!PLAN_SUB[yr][m]) PLAN_SUB[yr][m]={};
   if(!PLAN_SUB[yr][m][ctx]) PLAN_SUB[yr][m][ctx]={};
@@ -18886,7 +18953,7 @@ function exportar(){
 }
 
 hydrateCatsFromRealData();
-normalizeFinanceState();
+const normalizedPlanOnBoot=normalizeFinanceState();
 normalizeCatLists();
 initPlanSelects();
 loadLocalState();
@@ -18894,7 +18961,7 @@ const importedC6OnBoot=ensureC6JuneImports();
 cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
 appStarted=true;
-if(importedC6OnBoot) saveLocalState(stateForCloud());
+if(importedC6OnBoot||normalizedPlanOnBoot) saveLocalState(stateForCloud());
 setGate(!isUnlocked());
 if(isUnlocked()) setTimeout(connectFirebaseSync,300);
 window.addEventListener("load",()=>{if(isUnlocked()) connectFirebaseSync();});
@@ -18902,6 +18969,11 @@ setTimeout(()=>{setCPlan("todos");renderAll();},0);
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
