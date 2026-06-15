@@ -1359,6 +1359,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 }
 .sync-dot.ok{background:var(--grn);box-shadow:0 0 0 3px rgba(52,199,89,.14)}
 .sync-dot.saving{background:var(--am);box-shadow:0 0 0 3px rgba(255,149,0,.16)}
+.sync-dot.error{background:var(--re);box-shadow:0 0 0 3px rgba(255,59,48,.16)}
 
 /* Mobile experience: isolated overrides; desktop remains unchanged. */
 .top-actions{display:contents}
@@ -1467,12 +1468,6 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div class="nav-it" onclick="setPage('lanc')" id="nav-lanc"><i class="ti ti-list-details"></i> Lançamentos</div>
     <div class="nav-it" onclick="setPage('pend')" id="nav-pend"><i class="ti ti-clock-exclamation"></i> Pendências</div>
     <div class="nav-it" onclick="setPage('cart')" id="nav-cart"><i class="ti ti-credit-card"></i> Cartões</div>
-  </div>
-  <div class="sb-ft">
-    <div class="sb-ttl">Faturas</div>
-    <div id="sb-cart"></div>
-    <div class="sb-ttl" style="margin-top:10px">Saldos</div>
-    <div id="sb-saldo"></div>
   </div>
 </aside>
 
@@ -1599,10 +1594,10 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     </div>
     <div class="f2">
       <div class="fr"><label>Inst. Financeira</label>
-        <select id="l-inst"></select>
+        <select id="l-inst" onchange="syncPaymentSource('inst')"></select>
       </div>
       <div class="fr"><label>Cartão de crédito</label>
-        <select id="l-cart" onchange="syncInstFromCart('l-cart','l-inst')"><option value="">— nenhum —</option></select>
+        <select id="l-cart" onchange="syncPaymentSource('cart')"><option value="">— nenhum —</option></select>
       </div>
     </div>
     <!-- parcelado extra -->
@@ -1673,10 +1668,10 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     </div>
     <div class="f2">
       <div class="fr"><label>Inst. Financeira</label>
-        <select id="pr-inst"></select>
+        <select id="pr-inst" onchange="syncPaymentSource('inst','pr-cart','pr-inst')"></select>
       </div>
       <div class="fr"><label>Cartão de crédito</label>
-        <select id="pr-cart" onchange="syncInstFromCart('pr-cart','pr-inst')"><option value="">— nenhum —</option></select>
+        <select id="pr-cart" onchange="syncPaymentSource('cart','pr-cart','pr-inst')"><option value="">— nenhum —</option></select>
       </div>
     </div>
     <!-- parcelado -->
@@ -17537,7 +17532,12 @@ function applyCloudState(data){
   normalizeCatLists();
   renderAll();
   applyingRemote=false;
-  try{localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify({...data,dataVersion:DATASET_VERSION}));lastLocalUpdatedAt=Number(data.updatedAt)||lastLocalUpdatedAt;}catch(err){}
+  try{
+    const localState={dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,
+      updatedAt:Number(data.updatedAt)||Date.now(),updatedBy:data.updatedBy||"nuvem"};
+    localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify(localState));
+    lastLocalUpdatedAt=localState.updatedAt;
+  }catch(err){}
   return changed;
 }
 function normalizePlanAliases(){
@@ -17611,7 +17611,8 @@ function normalizePlanAliases(){
       l.mes=Number(l.mes)||parseInt(p[1]);
     }
     const recurring=/gasto recorrente/i.test(l.desc||"")||l.lt==="recorrente";
-    const key=recurring?[l.tipo,l.ctx,l.ano,l.mes,l.cat,l.sub,"recorrente"].join("|"):null;
+    const recurringIdentity=l.seriesId||l.sourceRecId||String(l.desc||"").trim();
+    const key=recurring?[l.tipo,l.ctx,l.ano,l.mes,l.cat,l.sub,recurringIdentity,l.data,Number(l.valor||0).toFixed(2)].join("|"):null;
     if(key&&byKey.has(key)){
       const idx=byKey.get(key);
       const prev=deduped[idx];
@@ -17667,6 +17668,10 @@ function setSyncStatus(status){
   const dot=document.getElementById("sync-dot");
   if(!dot) return;
   dot.className="sync-dot"+(status?` ${status}`:"");
+  const labels={ok:"Sincronizado",saving:"Salvando...",error:"Erro de sincronização"};
+  dot.title=labels[status]||"Aguardando sincronização";
+  const label=document.getElementById("user-email");
+  if(label&&status) label.textContent=labels[status];
 }
 function rememberUnlock(){
   try{localStorage.setItem(APP_UNLOCK_KEY,"1");}catch(err){}
@@ -17708,7 +17713,6 @@ function startCloudListener(){
   fbUnsub=fbDoc.onSnapshot(snap=>{
     const remote=snap.exists?snap.data():null;
     const remoteUpdated=Number(remote?.updatedAt)||0;
-    const firstSync=!stateLoaded;
     let changed=false;
     if(remote&&isUsableSavedState(remote)&&remoteUpdated>=lastLocalUpdatedAt) changed=applyCloudState(remote);
     const importChanged=ensureC6JuneImports();
@@ -17719,8 +17723,8 @@ function startCloudListener(){
   },err=>{
     console.error(err);
     const msg=document.getElementById("auth-msg");
-    if(msg) msg.textContent="Abriu localmente, mas não sincronizou. Ative login anônimo e confira as regras do Firestore.";
-    setSyncStatus("");
+    if(msg) msg.textContent="Não foi possível sincronizar com o Firestore.";
+    setSyncStatus("error");
   });
 }
 async function connectFirebaseSync(){
@@ -17738,7 +17742,16 @@ async function connectFirebaseSync(){
     }
     fbUser=fbAuth?.currentUser||null;
   }catch(err){
-    console.warn("Login anônimo indisponível; tentando Firestore direto",err);
+    console.error("Login anônimo indisponível",err);
+    stateLoaded=false;
+    setSyncStatus("error");
+    const msg=document.getElementById("auth-msg");
+    if(msg) msg.textContent="Falha na autenticação anônima. As alterações ainda não chegaram à nuvem.";
+    return;
+  }
+  if(!fbUser){
+    setSyncStatus("error");
+    return;
   }
   startCloudListener();
 }
@@ -17746,7 +17759,11 @@ function scheduleSave(){
   if(!appStarted||applyingRemote) return;
   const state=stateForCloud();
   saveLocalState(state);
-  if(!firebaseReady||!stateLoaded||!fbDoc) return;
+  if(!firebaseReady||!stateLoaded||!fbDoc){
+    setSyncStatus("saving");
+    connectFirebaseSync();
+    return;
+  }
   setSyncStatus("saving");
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
@@ -17755,7 +17772,7 @@ function scheduleSave(){
       setSyncStatus("ok");
     }catch(err){
       console.error(err);
-      setSyncStatus("");
+      setSyncStatus("error");
     }
   },500);
 }
@@ -17840,7 +17857,6 @@ function renderAll(){
   else if(pg==="lanc") renderLanc();
   else if(pg==="pend") renderPend();
   else if(pg==="cart") renderCart();
-  scheduleSave();
 }
 
 /* ─── SIDEBAR ───────────────────────────────────────────── */
@@ -17848,7 +17864,10 @@ function cardInvoice(c,yr=cartYr,mes=cartMes){
   return lancs.filter(l=>l.tipo==="despesa"&&l.ano===yr&&l.mes===mes&&(l.cartId===c.id||l.cart===c.nome||l.inst===c.nome)).reduce((s,l)=>s+l.valor,0);
 }
 function renderSB(){
-  document.getElementById("sb-cart").innerHTML=cartoes.map(c=>{
+  const cartEl=document.getElementById("sb-cart");
+  const saldoEl=document.getElementById("sb-saldo");
+  if(!cartEl&&!saldoEl) return;
+  if(cartEl) cartEl.innerHTML=cartoes.map(c=>{
     const fat=cardInvoice(c);
     const pct=c.limite>0?(fat/(fat+c.limite))*100:0;
     const bc=pct>80?"var(--re)":"var(--or)";
@@ -17857,7 +17876,7 @@ function renderSB(){
     <div class="mbar-bg"><div class="mbar-fl" style="width:${Math.min(pct,100).toFixed(0)}%;background:${bc}"></div></div>
     <div class="mbar-mt"><span>${MN[cartMes]} ${cartYr}</span><span>vence ${c.venc}</span></div></div>`;
   }).join("");
-  document.getElementById("sb-saldo").innerHTML=contas.map(c=>`
+  if(saldoEl) saldoEl.innerHTML=contas.map(c=>`
     <div class="smini"><span style="color:var(--mu)">${c.nome}</span>
     <span class="smini-vl" style="color:${c.saldo<0?"var(--re)":"var(--grn)"}">${fmt(c.saldo)}</span></div>`).join("");
 }
@@ -17898,6 +17917,19 @@ function getAllMeses(yr){
 // Coleta todas as cats/subs do contexto + dados reais
 function getAllCats(yr,cl){
   const cats={};
+  for(const ctx of cl){
+    for(const [cat,subs] of Object.entries(CATS?.[ctx]?.despesa||{})){
+      if(!cats[cat]) cats[cat]={};
+      for(const sub of subs||[]) cats[cat][sub]=true;
+    }
+    for(const [m,month] of Object.entries(PLAN?.[yr]||{})){
+      for(const cat of Object.keys(month?.[ctx]||{})){
+        if(isReceitaCat(cat)) continue;
+        if(!cats[cat]) cats[cat]={};
+        for(const sub of Object.keys(PLAN_SUB?.[yr]?.[m]?.[ctx]?.[cat]||{})) cats[cat][sub]=true;
+      }
+    }
+  }
   for(const l of lancs){
     if(l.ano!=yr||l.tipo!=="despesa") continue;
     if(!cl.includes(l.ctx)) continue;
@@ -17966,16 +17998,20 @@ function buildPlanMeses(){
 }
 
 function initPlanSelects(){
-  const curM=new Date().getMonth()+1;
-  const prev=curM===1?12:curM-1;
-  const next=curM===12?1:curM+1;
+  const now=new Date();
+  const curM=now.getMonth()+1;
+  const prev=Math.max(1,curM-1);
+  const next=Math.min(12,curM+1);
   const ini=document.getElementById("plan-mes-ini");
   const fim=document.getElementById("plan-mes-fim");
+  const yr=document.getElementById("plan-yr");
   if(!ini||!fim) return;
   const opts=MN.slice(1).map((n,i)=>`<option value="${i+1}">${n}</option>`).join("");
   ini.innerHTML=opts; fim.innerHTML=opts;
+  if(yr&&[...yr.options].some(o=>Number(o.value)===now.getFullYear())) yr.value=String(now.getFullYear());
   ini.value=prev; fim.value=next;
-  planMeses=[prev,curM,next].filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>a-b);
+  planMeses=[];
+  for(let m=prev;m<=next;m++) planMeses.push(m);
 }
 
 function renderPlan(){
@@ -18118,7 +18154,7 @@ function renderPlan(){
     const catStCell=showStats?statsHtml(catSt):"";
     const catOver=catTotM.some((r,i)=>catPlanM[i]>0&&r>catPlanM[i]);
     tbody+=`<tr class="row-cat ${catOver?"over-budget":""}"><td class="fix-cell"><div class="fix-inner">
-      <span class="ctag ${cat==="PJ ALUMA"?"ctag-pj":"ctag-pes"}">${cat==="PJ ALUMA"?"PJ":"Pes"}</span>${cat}
+      <span class="ctag ${cat==="PJ ALUMA"?"ctag-pj":"ctag-pes"}">${cat==="PJ ALUMA"?"PJ":"Pes"}</span><span>${cat}</span>
     </div></td>${catStCell}`;
     for(let i=0;i<planMeses.length;i++){
       const m=planMeses[i],p=catPlanM[i],r=catTotM[i];
@@ -18126,7 +18162,7 @@ function renderPlan(){
       const cls=over?"val-over":warn?"val-warn":r>0?"val-ok":"val-empty";
       const pk=`pi-${yr}-${m}-${cat.replace(/\W/g,"_")}`;
       tbody+=`<td class="th-mes-grp" style="padding:0;border-left:2px solid var(--bd2)"><div style="display:grid;grid-template-columns:1fr 1fr">
-        <div class="td-plan">${planInput({id:pk,value:p,title:"Editar planejado",onchange:`updPcat(${yr},${m},'${cat}',this.value)`})}</div>
+        <div class="td-plan"><div style="display:flex;align-items:center;gap:4px">${planInput({id:pk,value:p,title:"Editar planejado",onchange:`updPcat(${yr},${m},'${cat}',this.value)`})}<button class="copy-month-btn" onclick="copyPrevCategory(${yr},${m},'${cat}');event.stopPropagation()" title="Copiar somente ${cat} do mês anterior"><i class="ti ti-copy"></i></button></div></div>
         <div class="td-real"><span class="${cls}">${r>0?fmt(r):"—"}</span></div>
       </div></td>`;
     }
@@ -18147,10 +18183,11 @@ function renderPlan(){
       for(let i=0;i<planMeses.length;i++){
         const m=planMeses[i],v=subTotM[i];
         const spk=`spi-${yr}-${m}-${cat.replace(/\W/g,"_")}-${sub.replace(/\W/g,"_")}`;
-        const sv=getSP(yr,m,cPlan==="pj"?"pj":"pessoal",cat,sub);
+        const subCtx=editCtxForCat(cat);
+        const sv=getPlanSubCtxValue(yr,m,activePlanCtxs(),cat,sub);
         const sOver=sv>0&&v>sv;
         tbody+=`<td class="th-mes-grp" style="padding:0;border-left:2px solid var(--bd2)"><div style="display:grid;grid-template-columns:1fr 1fr" onclick="event.stopPropagation()">
-          <div class="td-plan">${planInput({id:spk,value:sv,title:`Planejado: ${sub}`,onchange:`updSP(${yr},${m},'${cPlan==="pj"?"pj":"pessoal"}','${cat}','${sub}',this.value)`})}</div>
+          <div class="td-plan">${planInput({id:spk,value:sv,title:`Planejado: ${sub}`,onchange:`updSP(${yr},${m},'${subCtx}','${cat}','${sub}',this.value)`})}</div>
           <div class="td-real"><span class="${sOver?"val-over":v>0?"val-ok":"val-empty"}">${v>0?fmt(v):"—"}</span></div>
         </div></td>`;
       }
@@ -18210,7 +18247,6 @@ function renderPlan(){
   tbody+=`</tr></tbody>`;
 
   tbl.innerHTML=thead+tbody;
-  scheduleSave();
 }
 
 // Atualiza planejado de categoria (total direto)
@@ -18220,9 +18256,10 @@ function updPcat(yr,m,cat,val){
   const ctx=editCtxForCat(cat);
   setP(yr,m,ctx,cat,n);
   renderPlan();
+  scheduleSave();
 }
 function toggleSub(k){expSubs[k]=!expSubs[k];renderPlan();}
-function updP(yr,m,ctx,cat,val){const n=parseMoney(val);if(!isNaN(n)&&n>=0) setP(yr,m,ctx,cat,n);renderPlan();}
+function updP(yr,m,ctx,cat,val){const n=parseMoney(val);if(!isNaN(n)&&n>=0){setP(yr,m,ctx,cat,n);scheduleSave();}renderPlan();}
 function getSP(yr,m,ctx,cat,sub){cat=canonicalPlanCat(cat);return PLAN_SUB?.[yr]?.[m]?.[ctx]?.[cat]?.[sub]||0}
 function setSP(yr,m,ctx,cat,sub,val){
   cat=canonicalPlanCat(cat);
@@ -18234,7 +18271,7 @@ function setSP(yr,m,ctx,cat,sub,val){
   const total=Object.values(PLAN_SUB[yr][m][ctx][cat]).reduce((s,v)=>s+v,0);
   setP(yr,m,ctx,cat,total);
 }
-function updSP(yr,m,ctx,cat,sub,val){const n=parseMoney(val);if(!isNaN(n)&&n>=0) setSP(yr,m,ctx,cat,sub,n);renderPlan();}
+function updSP(yr,m,ctx,cat,sub,val){const n=parseMoney(val);if(!isNaN(n)&&n>=0){setSP(yr,m,ctx,cat,sub,n);scheduleSave();}renderPlan();}
 function cloneObj(o){return JSON.parse(JSON.stringify(o||{}))}
 function copyPrevMonth(yr,m){
   const prev=m===1?12:m-1;
@@ -18249,6 +18286,19 @@ function copyPrevMonth(yr,m){
     PLAN_SUB[yr][m][ctx]=cloneObj(PLAN_SUB?.[prevYr]?.[prev]?.[ctx]);
   }
   renderPlan();
+  scheduleSave();
+}
+function copyPrevCategory(yr,m,cat){
+  const prev=m===1?12:m-1;
+  const prevYr=m===1?yr-1:yr;
+  const ctx=editCtxForCat(cat);
+  setP(yr,m,ctx,cat,getP(prevYr,prev,ctx,cat));
+  if(!PLAN_SUB[yr]) PLAN_SUB[yr]={};
+  if(!PLAN_SUB[yr][m]) PLAN_SUB[yr][m]={};
+  if(!PLAN_SUB[yr][m][ctx]) PLAN_SUB[yr][m][ctx]={};
+  PLAN_SUB[yr][m][ctx][canonicalPlanCat(cat)]=cloneObj(PLAN_SUB?.[prevYr]?.[prev]?.[ctx]?.[canonicalPlanCat(cat)]);
+  renderPlan();
+  scheduleSave();
 }
 function copyAllPrevMonth(){
   for(const m of planMeses) copyPrevMonth(parseInt(document.getElementById("plan-yr").value),m);
@@ -18263,7 +18313,7 @@ function editInlineLanc(id){
   inp.onblur=()=>salvarInlineLanc(id,inp.value);
   valEl.replaceWith(inp); inp.focus(); inp.select();
 }
-function salvarInlineLanc(id,val){const n=parseMoney(val);if(!isNaN(n)&&n>0){const l=lancs.find(x=>x.id===id);if(l) l.valor=n;}renderPlan();}
+function salvarInlineLanc(id,val){const n=parseMoney(val);if(!isNaN(n)&&n>0){const l=lancs.find(x=>x.id===id);if(l){l.valor=n;scheduleSave();}}renderPlan();}
 function editRealInline(id){
   const valEl=document.getElementById("lval-"+id);if(!valEl) return;
   const inp=document.createElement("input");
@@ -18310,7 +18360,6 @@ function renderCatManager(){
   if(!catSelected||!cats[catSelected]) catSelected=names[0]||"";
   document.getElementById("cat-list").innerHTML=names.length?names.map(c=>`<div class="cat-row ${c===catSelected?"active":""}" onclick="selectCat('${escArg(c)}')">${c}</div>`).join(""):`<div class="cat-empty">Nenhuma categoria</div>`;
   renderCatManagerSubs();
-  scheduleSave();
 }
 function escArg(v){return String(v).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
 function selectCat(cat){catSelected=cat;subSelected="";renderCatManager();}
@@ -18320,7 +18369,6 @@ function renderCatManagerSubs(){
   const subs=cats[catSelected]||[];
   if(!subSelected||!subs.includes(subSelected)) subSelected=subs[0]||"";
   list.innerHTML=subs.length?subs.map(sub=>`<div class="cat-row ${sub===subSelected?"active":""}" onclick="selectSubCat('${escArg(sub)}')">${sub}</div>`).join(""):`<div class="cat-empty">Nenhuma subcategoria</div>`;
-  scheduleSave();
 }
 function selectSubCat(sub){subSelected=sub;renderCatManagerSubs();}
 function addCat(){
@@ -18331,6 +18379,7 @@ function addCat(){
   catSelected=name.trim(); subSelected="";
   syncCats(); syncPRCats();
   renderCatManager();
+  scheduleSave();
 }
 function addSubCat(){
   const {cats}=getCatManagerState();
@@ -18341,6 +18390,7 @@ function addSubCat(){
   subSelected=sub.trim();
   syncCats(); syncPRCats();
   renderCatManagerSubs();
+  scheduleSave();
 }
 function removeCat(){
   const {cats}=getCatManagerState();
@@ -18349,6 +18399,7 @@ function removeCat(){
   catSelected=""; subSelected="";
   syncCats(); syncPRCats();
   renderCatManager();
+  scheduleSave();
 }
 function renameCat(){
   const {cats}=getCatManagerState();
@@ -18360,6 +18411,7 @@ function renameCat(){
   catSelected=novo;
   syncCats(); syncPRCats();
   renderCatManager();
+  scheduleSave();
 }
 function removeSelectedSubCat(){
   const {cats}=getCatManagerState();
@@ -18368,6 +18420,7 @@ function removeSelectedSubCat(){
   subSelected="";
   syncCats(); syncPRCats();
   renderCatManagerSubs();
+  scheduleSave();
 }
 function renameSubCat(){
   const {cats}=getCatManagerState();
@@ -18378,6 +18431,7 @@ function renameSubCat(){
   subSelected=novo;
   syncCats(); syncPRCats();
   renderCatManagerSubs();
+  scheduleSave();
 }
 
 function setCLanc(v){
@@ -18630,27 +18684,47 @@ function editarLanc(id){
     document.getElementById("l-data").value=l.data;
     document.getElementById("l-cat").value=l.cat; syncSubs("l-cat","l-sub");
     document.getElementById("l-sub").value=l.sub;
-    document.getElementById("l-inst").value=l.inst;
+    document.getElementById("l-inst").value=l.cartId?"":(l.inst||"");
     document.getElementById("l-cart").value=l.cartId||cartoes.find(c=>c.nome===l.cart)?.id||"";
     document.getElementById("l-status").value=l.status;
     document.getElementById("l-edit-id").value=id;
-    if(l.lt==="parcelado"){document.getElementById("l-nparcelas").value=l.nparc||"";document.getElementById("l-vparcela").value=l.valor;document.getElementById("l-datacompra").value=l.dataEvento||l.data;document.getElementById("l-primerpag").value=l.data;}
-    if(l.lt==="recorrente"){document.getElementById("l-vlanc").value=l.valor;document.getElementById("l-datainicial").value=l.dataEvento||l.data;document.getElementById("l-primerpag2").value=l.data;}
+    if(l.lt==="parcelado"){
+      document.getElementById("l-nparcelas").value=l.nparc||"";
+      document.getElementById("l-vparcela").value=l.valor;
+      document.getElementById("l-datacompra").value=l.seriesStartEvento||l.dataEvento||l.data;
+      document.getElementById("l-primerpag").value=l.seriesStartData||l.data;
+    }
+    if(l.lt==="recorrente"){
+      document.getElementById("l-nlanc").value=l.repeatCount||l.nparc||"";
+      document.getElementById("l-vlanc").value=l.valor;
+      document.getElementById("l-datainicial").value=l.seriesStartEvento||l.dataEvento||l.data;
+      document.getElementById("l-primerpag2").value=l.seriesStartData||l.data;
+    }
   },30);
 }
-function excluirRec(id){if(confirm("Excluir recorrente?")){recs=recs.filter(r=>r.id!==id);renderAll();scheduleSave();}}
+function excluirRec(id){
+  if(confirm("Excluir recorrente e seus lançamentos vinculados?")){
+    recs=recs.filter(r=>r.id!==id);
+    lancs=lancs.filter(l=>l.sourceRecId!==id);
+    renderAll();
+    scheduleSave();
+  }
+}
 function editarRec(id){
   const r=recs.find(x=>x.id===id);if(!r)return;
   abrirModalPR("recorrente");
   setTimeout(()=>{
-    selPRTipo("despesa"); selPRMode("recorrente");
+    selPRTipo(r.tipo||"despesa"); selPRMode("recorrente");
     document.getElementById("pr-ctx").value=r.ctx; syncPRCats();
     document.getElementById("pr-desc").value=r.desc;
     document.getElementById("pr-vlanc").value=r.valor;
-    document.getElementById("pr-nlanc").value=12;
+    document.getElementById("pr-nlanc").value=r.count||12;
     document.getElementById("pr-cat").value=r.cat; syncSubs("pr-cat","pr-sub");
     document.getElementById("pr-sub").value=r.sub;
     document.getElementById("pr-inst").value=r.inst;
+    document.getElementById("pr-cart").value=r.cartId||"";
+    document.getElementById("pr-datainicial").value=r.dataEvento||r.data||"";
+    document.getElementById("pr-primerpag2").value=r.data||"";
     document.getElementById("pr-edit-id").value=id;
   },30);
 }
@@ -18837,6 +18911,7 @@ function abrirModalLanc(){
   document.getElementById("l-dataevento").value=new Date().toISOString().split("T")[0];
   document.getElementById("l-data").value=new Date().toISOString().split("T")[0];
   document.getElementById("l-status").value="concluido";
+  ["l-nparcelas","l-vparcela","l-datacompra","l-primerpag","l-nlanc","l-vlanc","l-datainicial","l-primerpag2"].forEach(id=>document.getElementById(id).value="");
   syncInstOptions("l-inst");
   syncCartOptions("l-cart");
   document.getElementById("modal-lanc").classList.remove("hidden");
@@ -18878,11 +18953,18 @@ function syncInstOptions(selId){
   const names=["C6 Débito Lorena","Nu PJ Débito"];
   const sel=document.getElementById(selId);
   const prev=sel.value;
-  sel.innerHTML=names.map(n=>`<option>${n}</option>`).join("");
+  sel.innerHTML=`<option value="">— nenhuma —</option>`+names.map(n=>`<option>${n}</option>`).join("");
   if(prev&&names.includes(prev)) sel.value=prev;
 }
 function syncInstFromCart(cartSelId,instSelId){
-  return;
+  syncPaymentSource("cart",cartSelId,instSelId);
+}
+function syncPaymentSource(source,cartSelId="l-cart",instSelId="l-inst"){
+  const cart=document.getElementById(cartSelId);
+  const inst=document.getElementById(instSelId);
+  if(!cart||!inst) return;
+  if(source==="cart"&&cart.value) inst.value="";
+  if(source==="inst"&&inst.value) cart.value="";
 }
 function openInstModal(){
   renderInstList();
@@ -18890,7 +18972,6 @@ function openInstModal(){
 }
 function renderInstList(){
   document.getElementById("inst-list").innerHTML=contas.map(c=>`<span class="cat-chip">${c.nome}<button onclick="removeInst('${escArg(c.nome)}')" title="Remover"><i class="ti ti-x"></i></button></span>`).join("");
-  scheduleSave();
 }
 function addInst(){
   const nome=document.getElementById("inst-new").value.trim();
@@ -18898,32 +18979,59 @@ function addInst(){
   if(!contas.some(c=>c.nome===nome)) contas.push({nome,saldo:0});
   document.getElementById("inst-new").value="";
   renderInstList();
+  scheduleSave();
 }
 function removeInst(nome){
   if(!confirm(`Remover instituição "${nome}"?`)) return;
   contas=contas.filter(c=>c.nome!==nome);
   renderInstList();
+  scheduleSave();
 }
 function salvarLanc(){
   const desc=document.getElementById("l-desc").value.trim();
   const vEl=ltMode==="parcelado"?"l-vparcela":ltMode==="recorrente"?"l-vlanc":"l-valor";
-  const valor=parseFloat(document.getElementById(vEl).value);
+  const valor=parseMoney(document.getElementById(vEl).value);
   if(!desc||!valor||isNaN(valor))return alert("Preencha descrição e valor.");
   const dEl=ltMode==="parcelado"?"l-primerpag":ltMode==="recorrente"?"l-primerpag2":"l-data";
   const evEl=ltMode==="parcelado"?"l-datacompra":ltMode==="recorrente"?"l-datainicial":"l-dataevento";
   const data=document.getElementById(dEl).value||new Date().toISOString().split("T")[0];
   const dataEvento=document.getElementById(evEl).value||data;
-  const mes=parseInt(data.split("-")[1]), ano=parseInt(data.split("-")[0]);
   const cartId=document.getElementById("l-cart").value;
   const card=cartoes.find(c=>c.id===cartId);
-  const obj={tipo:fTipo,ctx:document.getElementById("l-ctx").value,desc,valor,data,dataEvento,mes,ano,
+  const inst=cartId?"":document.getElementById("l-inst").value;
+  const base={tipo:fTipo,ctx:document.getElementById("l-ctx").value,desc,valor,
     cat:document.getElementById("l-cat").value,sub:document.getElementById("l-sub").value,
-    inst:document.getElementById("l-inst").value,cartId,cart:card?card.nome:"",status:document.getElementById("l-status").value,lt:ltMode};
-  if(ltMode==="parcelado"){obj.nparc=parseInt(document.getElementById("l-nparcelas").value)||1;obj.parc=1;}
+    inst,cartId,cart:card?card.nome:"",status:document.getElementById("l-status").value,lt:ltMode};
   const eid=document.getElementById("l-edit-id").value;
-  if(eid){const i=lancs.findIndex(l=>l.id===parseInt(eid));if(i>=0)lancs[i]={...lancs[i],...obj};}
-  else lancs.push({id:nid++,...obj});
+  const old=eid?lancs.find(l=>l.id===parseInt(eid)):null;
+  if(ltMode==="unico"){
+    const mes=parseInt(data.split("-")[1]), ano=parseInt(data.split("-")[0]);
+    const obj={...base,data,dataEvento,mes,ano};
+    if(old){const i=lancs.findIndex(l=>l.id===old.id);lancs[i]={...old,...obj};}
+    else lancs.push({id:nid++,...obj});
+  }else{
+    const count=ltMode==="parcelado"
+      ?parseInt(document.getElementById("l-nparcelas").value)
+      :parseInt(document.getElementById("l-nlanc").value);
+    if(!count||count<1) return alert(`Informe o número de ${ltMode==="parcelado"?"parcelas":"lançamentos"}.`);
+    const seriesId=old?.seriesId||`serie-${Date.now()}-${nid}`;
+    if(old) lancs=lancs.filter(l=>old.seriesId?l.seriesId!==old.seriesId:l.id!==old.id);
+    for(let i=0;i<count;i++){
+      const efetivacao=addMonthsISO(data,i);
+      const evento=ltMode==="recorrente"?addMonthsISO(dataEvento,i):dataEvento;
+      const [ano,mes]=efetivacao.split("-").map(Number);
+      lancs.push({id:nid++,...base,data:efetivacao,dataEvento:evento,ano,mes,seriesId,
+        seriesStartData:data,seriesStartEvento:dataEvento,nparc:count,parc:i+1,repeatCount:count});
+    }
+  }
   fechar("modal-lanc"); renderAll();scheduleSave();
+}
+function addMonthsISO(iso,offset){
+  const [y,m,d]=String(iso).split("-").map(Number);
+  const first=new Date(y,m-1+offset,1,12);
+  const lastDay=new Date(first.getFullYear(),first.getMonth()+1,0,12).getDate();
+  const date=new Date(first.getFullYear(),first.getMonth(),Math.min(d,lastDay),12);
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 }
 
 /* ─── MODAL PARCELADO/RECORRENTE ────────────────────────── */
@@ -18962,16 +19070,31 @@ function salvarPR(){
   const desc=document.getElementById("pr-desc").value.trim();
   if(!desc)return alert("Preencha a descrição.");
   if(prMode==="recorrente"){
-    const valor=parseFloat(document.getElementById("pr-vlanc").value);
+    const valor=parseMoney(document.getElementById("pr-vlanc").value);
+    const count=parseInt(document.getElementById("pr-nlanc").value);
     const di=document.getElementById("pr-datainicial").value;
     const dia=di?parseInt(di.split("-")[2]):1;
-    if(!valor||isNaN(valor))return alert("Preencha o valor.");
+    if(!valor||isNaN(valor)||!count||count<1)return alert("Preencha o valor e o número de lançamentos.");
     const primeiro=document.getElementById("pr-primerpag2").value||di||new Date().toISOString().split("T")[0];
-    const obj={desc,valor,dia,ctx:document.getElementById("pr-ctx").value,
+    const cartId=document.getElementById("pr-cart").value;
+    const card=cartoes.find(c=>c.id===cartId);
+    const obj={desc,valor,dia,tipo:prTipo,ctx:document.getElementById("pr-ctx").value,
       cat:document.getElementById("pr-cat").value,sub:document.getElementById("pr-sub").value,
-      inst:document.getElementById("pr-inst").value,inicio:primeiro.slice(0,7),dataEvento:di,data:primeiro};
+      inst:cartId?"":document.getElementById("pr-inst").value,cartId,cart:card?card.nome:"",
+      inicio:primeiro.slice(0,7),dataEvento:di,data:primeiro,count};
+    let recId=eid;
     if(eid){const r=recs.find(x=>x.id===eid);if(r)Object.assign(r,obj);}
-    else recs.push({id:"r"+(nrid++),...obj});
+    else{recId="r"+(nrid++);recs.push({id:recId,...obj});}
+    lancs=lancs.filter(l=>l.sourceRecId!==recId);
+    for(let i=0;i<count;i++){
+      const data=addMonthsISO(primeiro,i);
+      const dataEvento=addMonthsISO(di||primeiro,i);
+      const [ano,mes]=data.split("-").map(Number);
+      lancs.push({id:nid++,tipo:prTipo,ctx:obj.ctx,desc,valor,data,dataEvento,ano,mes,
+        cat:obj.cat,sub:obj.sub,inst:obj.inst,cartId,cart:obj.cart,status:"pendente",
+        lt:"recorrente",seriesId:`rec-${recId}`,sourceRecId:recId,seriesStartData:primeiro,
+        seriesStartEvento:di||primeiro,nparc:count,parc:i+1,repeatCount:count});
+    }
   } else {
     const nparc=parseInt(document.getElementById("pr-nparcelas").value)||1;
     const vparcela=parseFloat(document.getElementById("pr-vparcela").value);
@@ -18982,9 +19105,9 @@ function salvarPR(){
     const ctx=document.getElementById("pr-ctx").value;
     const cat=document.getElementById("pr-cat").value;
     const sub=document.getElementById("pr-sub").value;
-    const inst=document.getElementById("pr-inst").value;
     const cartId=document.getElementById("pr-cart").value;
     const card=cartoes.find(c=>c.id===cartId);
+    const inst=cartId?"":document.getElementById("pr-inst").value;
     for(let i=0;i<nparc;i++){
       const d=new Date(baseDate);d.setMonth(d.getMonth()+i);
       const ds=d.toISOString().split("T")[0];
@@ -19036,10 +19159,10 @@ function exportar(){
 }
 
 hydrateCatsFromRealData();
-const normalizedPlanOnBoot=normalizeFinanceState();
 normalizeCatLists();
 initPlanSelects();
 loadLocalState();
+const normalizedPlanOnBoot=normalizeFinanceState();
 const importedC6OnBoot=ensureC6JuneImports();
 cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
