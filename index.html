@@ -524,8 +524,11 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 .invoice-item-title{font-size:11px;font-weight:600;color:var(--tx)}
 .invoice-item-meta{font-size:10px;color:var(--hi);margin-top:2px}
 .invoice-item-value{font-size:12px;font-weight:700;color:var(--tx);font-family:var(--fnm);white-space:nowrap}
-.cat-remap-bar{margin-top:12px;border:1px solid var(--bd);background:var(--sur2);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px) auto;gap:8px;align-items:center}
-.cat-usage{font-size:11px;color:var(--tx2)}
+.cat-remap-bar{margin-top:14px;border:1px solid var(--bd);background:var(--sur2);border-radius:8px;padding:12px;display:grid;gap:10px;min-width:0}
+.cat-usage{font-size:12px;color:var(--tx2);line-height:1.4;overflow-wrap:normal;word-break:normal}
+.cat-remap-controls{display:flex;gap:8px;align-items:center;min-width:0}
+.cat-remap-controls select{flex:1;min-width:0}
+.cat-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bd)}
 .card-modal{width:min(520px,100%)}
 .card-edit-preview{border:1px solid #DCE3EA;background:#F8FAFC;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .card-edit-preview-icon{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}
@@ -1152,7 +1155,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   background:#EEF4FF;
   color:#1D4ED8;
 }
-.cat-modal{max-width:560px}
+.cat-modal{width:min(760px,calc(100vw - 32px));max-width:760px;overflow-x:hidden}
 .cat-tabs{
   display:flex;
   align-items:center;
@@ -1184,14 +1187,15 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 }
 .cat-cols{
   display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:14px;
 }
+.cat-col{min-width:0}
 .cat-head{
-  display:grid;
-  grid-template-columns:1fr repeat(5,28px);
+  display:flex;
   align-items:center;
-  gap:6px;
+  justify-content:space-between;
+  gap:8px;
   margin-bottom:8px;
 }
 .cat-head span{
@@ -1212,9 +1216,16 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   justify-content:center;
 }
 .cat-head button:hover{background:#EEF2F6;color:#2563EB}
+.cat-item-actions{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.cat-item-actions button{width:34px;height:32px;border:1px solid var(--bd);background:#fff;color:var(--tx2);border-radius:7px;display:grid;place-items:center;cursor:pointer}
+.cat-item-actions button:hover{background:#EEF4FF;color:#1D4ED8;border-color:#B7CCF7}
+.cat-item-actions button.danger:hover{background:var(--re2);color:var(--re);border-color:var(--re3)}
 .cat-box{
-  height:280px;
-  overflow:auto;
+  height:320px;
+  width:100%;
+  max-width:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
   padding:8px;
   border:1px solid #D8E0E8;
   border-radius:8px;
@@ -1225,8 +1236,8 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   align-items:center;
   justify-content:space-between;
   gap:8px;
-  min-height:30px;
-  padding:6px 9px;
+  min-height:38px;
+  padding:7px 9px;
   border-radius:6px;
   cursor:pointer;
   font-size:14px;
@@ -1237,6 +1248,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 .cat-row.dragging{opacity:.45;background:#E8F0FE}
 .cat-grip{color:#A7B2BE;font-size:14px;flex:0 0 auto}
 .cat-row-label{display:flex;align-items:center;gap:7px;min-width:0}
+.cat-row-label span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cat-row.active{
   background:#FDE9C7;
   color:#C04A00;
@@ -1485,6 +1497,14 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .sgrid{grid-template-columns:1fr!important}
   .th-fix,.fix-cell{width:136px;min-width:136px}
   .top-actions .btn-g,.top-actions .btn-p{padding-left:9px;padding-right:9px}
+}
+@media (max-width:700px){
+  .cat-modal{width:100%;max-width:none;overflow-x:hidden}
+  .cat-cols{grid-template-columns:1fr!important}
+  .cat-box{height:220px}
+  .cat-remap-controls{flex-direction:column;align-items:stretch}
+  .cat-remap-controls .btn-g{justify-content:center}
+  .cat-modal-actions{position:sticky;bottom:0;background:#fff;padding-bottom:env(safe-area-inset-bottom)}
 }
 </style>
 </head>
@@ -1818,31 +1838,45 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
       <div class="cat-col">
         <div class="cat-head">
           <span>Categoria</span>
-          <button onclick="moveSelectedCat(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
-          <button onclick="moveSelectedCat(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
           <button onclick="addCat()" title="Adicionar"><i class="ti ti-plus"></i></button>
-          <button onclick="removeCat()" title="Excluir"><i class="ti ti-trash"></i></button>
-          <button onclick="renameCat()" title="Renomear"><i class="ti ti-edit"></i></button>
         </div>
         <div class="cat-box" id="cat-list"></div>
+        <div class="cat-item-actions">
+          <button onclick="moveSelectedCat(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
+          <button onclick="moveSelectedCat(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
+          <button onclick="renameCat()" title="Renomear"><i class="ti ti-edit"></i></button>
+          <button class="danger" onclick="removeCat()" title="Excluir"><i class="ti ti-trash"></i></button>
+        </div>
       </div>
       <div class="cat-col">
         <div class="cat-head">
           <span>Subcategoria</span>
-          <button onclick="moveSelectedSub(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
-          <button onclick="moveSelectedSub(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
           <button onclick="addSubCat()" title="Adicionar"><i class="ti ti-plus"></i></button>
-          <button onclick="removeSelectedSubCat()" title="Excluir"><i class="ti ti-trash"></i></button>
-          <button onclick="renameSubCat()" title="Renomear"><i class="ti ti-edit"></i></button>
         </div>
         <div class="cat-box" id="cat-sub-list"></div>
+        <div class="cat-item-actions">
+          <button onclick="moveSelectedSub(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
+          <button onclick="moveSelectedSub(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
+          <button onclick="renameSubCat()" title="Renomear"><i class="ti ti-edit"></i></button>
+          <button class="danger" onclick="removeSelectedSubCat()" title="Excluir"><i class="ti ti-trash"></i></button>
+        </div>
       </div>
     </div>
     <div class="cat-remap-bar">
       <div class="cat-usage" id="cat-usage"></div>
-      <select id="cat-remap-target"></select>
-      <button class="btn-g" onclick="moveSelectedCategory()"><i class="ti ti-arrows-exchange"></i> Remanejar</button>
+      <div class="cat-remap-controls"><select id="cat-remap-target"></select>
+      <button class="btn-g" onclick="moveSelectedCategory()"><i class="ti ti-arrows-exchange"></i> Remanejar categoria</button></div>
     </div>
+    <div class="cat-modal-actions"><button class="f-can" onclick="fechar('modal-cats')">Fechar</button><button class="f-sav" onclick="saveCategoryManager()"><i class="ti ti-check"></i> Salvar ordem</button></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="modal-cat-delete">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-ttl">Excluir <span id="cat-delete-kind">categoria</span><button class="mc-btn" onclick="fechar('modal-cat-delete')"><i class="ti ti-x"></i></button></div>
+    <div class="empty" style="align-items:flex-start;text-align:left;padding:4px 0 14px"><p id="cat-delete-summary" style="margin:0;color:var(--tx2)"></p></div>
+    <div class="fr"><label>Remanejar vínculos para</label><select id="cat-delete-target"></select></div>
+    <div class="fact"><button class="f-can" onclick="fechar('modal-cat-delete')">Cancelar</button><button class="btn-g" onclick="confirmCategoryDelete('move')"><i class="ti ti-arrows-exchange"></i> Remanejar e excluir</button><button class="f-sav" style="background:var(--re)" onclick="confirmCategoryDelete('delete')"><i class="ti ti-trash"></i> Excluir tudo</button></div>
   </div>
 </div>
 
@@ -18694,6 +18728,9 @@ function openCatsModal(){
   document.getElementById("modal-cats").classList.remove("hidden");
   renderCatManager();
 }
+function saveCategoryManager(){
+  ensureCategoryOrders();renderAll();scheduleSave();fechar("modal-cats");
+}
 let catTipoSel="despesa", catSelected="", subSelected="";
 let draggedCat="",draggedSub="";
 function setCatTipo(tipo){
@@ -18721,7 +18758,7 @@ function renderCatManager(){
   }).join(""):`<div class="cat-empty">Nenhuma categoria</div>`;
   const usage=categoryUsage(ctx,tipo,catSelected);
   const usageEl=document.getElementById("cat-usage");
-  if(usageEl) usageEl.textContent=catSelected?`${usage.items} lançamento(s) e ${usage.plans} planejamento(s) vinculados a ${catSelected}.`:"Selecione uma categoria.";
+  if(usageEl) usageEl.textContent=catSelected?`${catSelected}: ${usage.items} lançamento(s) · ${usage.plans} planejamento(s).`:"Selecione uma categoria.";
   const target=document.getElementById("cat-remap-target");
   if(target) target.innerHTML=`<option value="">Mover para...</option>`+names.filter(c=>c!==catSelected).map(c=>`<option value="${c}">${c}</option>`).join("");
   renderCatManagerSubs();
@@ -18833,18 +18870,8 @@ function addSubCat(){
   renderCatManagerSubs();
   scheduleSave();
 }
-function removeCat(){
-  const {ctx,tipo,cats}=getCatManagerState();
-  if(!catSelected||!confirm(`Excluir categoria "${catSelected}"?`)) return;
-  const usage=categoryUsage(ctx,tipo,catSelected);
-  if(usage.items||usage.plans) return alert("Essa categoria está em uso. Escolha um destino em 'Mover para...' e clique em Remanejar antes de excluí-la.");
-  delete cats[catSelected];
-  CAT_ORDER[ctx][tipo]=CAT_ORDER[ctx][tipo].filter(c=>c!==catSelected);delete SUB_ORDER[ctx][tipo][catSelected];
-  catSelected=""; subSelected="";
-  syncCats(); syncPRCats();
-  renderCatManager();
-  scheduleSave();
-}
+let categoryDeleteState=null;
+function removeCat(){openCategoryDeleteDialog("category");}
 function renameCat(){
   const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected) return;
@@ -18856,18 +18883,7 @@ function renameCat(){
   renderCatManager();
   scheduleSave();
 }
-function removeSelectedSubCat(){
-  const {ctx,tipo,cats}=getCatManagerState();
-  if(!catSelected||!subSelected||!confirm(`Excluir subcategoria "${subSelected}"?`)) return;
-  const used=lancs.some(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===catSelected&&l.sub===subSelected)||recs.some(r=>r.ctx===ctx&&r.tipo===tipo&&r.cat===catSelected&&r.sub===subSelected);
-  if(used) return alert("Essa subcategoria possui lançamentos. Renomeie-a para remanejar os registros antes de excluir.");
-  cats[catSelected]=(cats[catSelected]||[]).filter(s=>s!==subSelected);
-  SUB_ORDER[ctx][tipo][catSelected]=(SUB_ORDER[ctx][tipo][catSelected]||[]).filter(s=>s!==subSelected);
-  subSelected="";
-  syncCats(); syncPRCats();
-  renderCatManagerSubs();
-  scheduleSave();
-}
+function removeSelectedSubCat(){openCategoryDeleteDialog("subcategory");}
 function renameSubCat(){
   const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected||!subSelected) return;
@@ -18888,6 +18904,75 @@ function renameSubCat(){
   syncCats(); syncPRCats();
   renderCatManagerSubs();
   scheduleSave();
+}
+function subcategoryUsage(ctx,tipo,cat,sub){
+  const items=lancs.filter(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===cat&&l.sub===sub).length+
+    recs.filter(r=>r.ctx===ctx&&r.tipo===tipo&&r.cat===cat&&r.sub===sub).length;
+  let plans=0;
+  for(const year of Object.values(PLAN_SUB||{}))for(const month of Object.values(year||{}))if(Object.prototype.hasOwnProperty.call(month?.[ctx]?.[cat]||{},sub))plans++;
+  return {items,plans};
+}
+function openCategoryDeleteDialog(kind){
+  const {ctx,tipo,cats}=getCatManagerState();
+  if(kind==="category"&&!catSelected)return;
+  if(kind==="subcategory"&&(!catSelected||!subSelected))return;
+  const name=kind==="category"?catSelected:subSelected;
+  const usage=kind==="category"?categoryUsage(ctx,tipo,catSelected):subcategoryUsage(ctx,tipo,catSelected,subSelected);
+  const targets=kind==="category"?Object.keys(cats).filter(c=>c!==catSelected):(cats[catSelected]||[]).filter(s=>s!==subSelected);
+  categoryDeleteState={kind,ctx,tipo,cat:catSelected,sub:subSelected,name};
+  document.getElementById("cat-delete-kind").textContent=kind==="category"?"categoria":"subcategoria";
+  document.getElementById("cat-delete-summary").textContent=`${name} possui ${usage.items} lançamento(s) e ${usage.plans} planejamento(s) vinculados.`;
+  document.getElementById("cat-delete-target").innerHTML=`<option value="">Selecione o destino...</option>`+targets.map(v=>`<option value="${v}">${v}</option>`).join("");
+  document.getElementById("modal-cat-delete").classList.remove("hidden");
+}
+function moveSubcategoryReferences(ctx,tipo,cat,from,to){
+  if(!to||from===to)return false;
+  const cats=CATS[ctx][tipo];
+  for(const l of lancs)if(l.ctx===ctx&&l.tipo===tipo&&l.cat===cat&&l.sub===from)l.sub=to;
+  for(const r of recs)if(r.ctx===ctx&&r.tipo===tipo&&r.cat===cat&&r.sub===from)r.sub=to;
+  for(const year of Object.values(PLAN_SUB||{}))for(const month of Object.values(year||{})){
+    const bucket=month?.[ctx]?.[cat];if(!bucket||!Object.prototype.hasOwnProperty.call(bucket,from))continue;
+    bucket[to]=(Number(bucket[to])||0)+(Number(bucket[from])||0);delete bucket[from];
+  }
+  cats[cat]=[...new Set((cats[cat]||[]).map(s=>s===from?to:s))];
+  SUB_ORDER[ctx][tipo][cat]=[...new Set((SUB_ORDER[ctx][tipo][cat]||[]).map(s=>s===from?to:s))];
+  return true;
+}
+function deleteCategoryCompletely(ctx,tipo,cat){
+  const hadLaunches=lancs.length>0;
+  lancs=lancs.filter(l=>!(l.ctx===ctx&&l.tipo===tipo&&l.cat===cat));
+  recs=recs.filter(r=>!(r.ctx===ctx&&r.tipo===tipo&&r.cat===cat));
+  if(hadLaunches&&!lancs.length)lancsEpoch++;
+  for(const year of Object.values(PLAN||{}))for(const month of Object.values(year||{}))if(month?.[ctx])delete month[ctx][cat];
+  for(const year of Object.values(PLAN_SUB||{}))for(const month of Object.values(year||{}))if(month?.[ctx])delete month[ctx][cat];
+  delete CATS[ctx][tipo][cat];CAT_ORDER[ctx][tipo]=CAT_ORDER[ctx][tipo].filter(c=>c!==cat);delete SUB_ORDER[ctx][tipo][cat];
+}
+function deleteSubcategoryCompletely(ctx,tipo,cat,sub){
+  const hadLaunches=lancs.length>0;
+  lancs=lancs.filter(l=>!(l.ctx===ctx&&l.tipo===tipo&&l.cat===cat&&l.sub===sub));
+  recs=recs.filter(r=>!(r.ctx===ctx&&r.tipo===tipo&&r.cat===cat&&r.sub===sub));
+  if(hadLaunches&&!lancs.length)lancsEpoch++;
+  for(const year of Object.keys(PLAN_SUB||{}))for(const month of Object.keys(PLAN_SUB[year]||{})){
+    const bucket=PLAN_SUB?.[year]?.[month]?.[ctx]?.[cat];if(!bucket)continue;
+    delete bucket[sub];
+    if(PLAN?.[year]?.[month]?.[ctx])PLAN[year][month][ctx][cat]=Object.values(bucket).reduce((sum,value)=>sum+(Number(value)||0),0);
+  }
+  CATS[ctx][tipo][cat]=(CATS[ctx][tipo][cat]||[]).filter(s=>s!==sub);
+  SUB_ORDER[ctx][tipo][cat]=(SUB_ORDER[ctx][tipo][cat]||[]).filter(s=>s!==sub);
+}
+function confirmCategoryDelete(mode){
+  const state=categoryDeleteState;if(!state)return;
+  const target=document.getElementById("cat-delete-target").value;
+  if(mode==="move"&&!target)return alert("Selecione para onde os vínculos devem ser movidos.");
+  if(mode==="delete"&&!confirm(`Excluir ${state.name} e todos os vínculos? Essa ação removerá lançamentos e planejamentos relacionados.`))return;
+  if(state.kind==="category"){
+    if(mode==="move")migrateCategoryReferences(state.ctx,state.tipo,state.cat,target);else deleteCategoryCompletely(state.ctx,state.tipo,state.cat);
+    catSelected=mode==="move"?target:"";subSelected="";
+  }else{
+    if(mode==="move")moveSubcategoryReferences(state.ctx,state.tipo,state.cat,state.sub,target);else deleteSubcategoryCompletely(state.ctx,state.tipo,state.cat,state.sub);
+    subSelected=mode==="move"?target:"";
+  }
+  fechar("modal-cat-delete");categoryDeleteState=null;syncCats();syncPRCats();renderCatManager();renderAll();scheduleSave();
 }
 
 function setCLanc(v){
