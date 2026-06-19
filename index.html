@@ -462,10 +462,12 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 .pend-date-hdr{
   padding:7px 16px;background:var(--sur2);
   display:flex;justify-content:space-between;align-items:center;
-  border-bottom:1px solid var(--bd);
+  border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s;
 }
+.pend-date-hdr:hover{background:#EEF2F6}
 .pend-date-lbl{font-size:11px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:5px}
 .pend-date-tot{font-size:12px;font-weight:700;color:var(--re);font-family:var(--fnm)}
+.pend-day-body.collapsed{display:none}
 .pend-cat-hdr{
   padding:5px 16px 4px 26px;
   display:flex;justify-content:space-between;align-items:center;
@@ -502,6 +504,28 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 }
 .hide-pend-btn:hover{background:var(--sur2);color:var(--tx)}
 .pend-item.is-hidden{opacity:.55;background:var(--sur2)}
+.pend-card-tabs{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.pend-card-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:14px}
+.pend-card-mini{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:13px;display:grid;gap:9px}
+.pend-card-mini-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pend-card-mini-name{font-size:12px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:8px}
+.pend-card-mini-value{font-size:17px;font-weight:800;color:var(--re);font-family:var(--fnm)}
+.pend-card-mini-meta{font-size:10px;color:var(--hi)}
+.invoice-row{border-bottom:1px solid var(--bd);background:#FCFDFE}
+.invoice-main{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:12px 16px}
+.invoice-icon{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:10px;font-weight:800}
+.invoice-title{font-size:12px;font-weight:750;color:var(--tx)}
+.invoice-meta{font-size:10px;color:var(--hi);margin-top:2px}
+.invoice-value{font-size:14px;font-weight:800;color:var(--re);font-family:var(--fnm);white-space:nowrap}
+.invoice-details{border-top:1px solid var(--bd);background:#fff}
+.invoice-details.hidden{display:none}
+.invoice-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 16px 9px 58px;border-bottom:1px solid #EEF2F6}
+.invoice-item:last-child{border-bottom:0}
+.invoice-item-title{font-size:11px;font-weight:600;color:var(--tx)}
+.invoice-item-meta{font-size:10px;color:var(--hi);margin-top:2px}
+.invoice-item-value{font-size:12px;font-weight:700;color:var(--tx);font-family:var(--fnm);white-space:nowrap}
+.cat-remap-bar{margin-top:12px;border:1px solid var(--bd);background:var(--sur2);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px) auto;gap:8px;align-items:center}
+.cat-usage{font-size:11px;color:var(--tx2)}
 
 /* ─── CARTÕES ────────────────────────────────── */
 .cart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
@@ -1194,6 +1218,8 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 .cat-row{
   display:flex;
   align-items:center;
+  justify-content:space-between;
+  gap:8px;
   min-height:30px;
   padding:6px 9px;
   border-radius:6px;
@@ -1360,6 +1386,9 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 .sync-dot.ok{background:var(--grn);box-shadow:0 0 0 3px rgba(52,199,89,.14)}
 .sync-dot.saving{background:var(--am);box-shadow:0 0 0 3px rgba(255,149,0,.16)}
 .sync-dot.error{background:var(--re);box-shadow:0 0 0 3px rgba(255,59,48,.16)}
+body.sync-loading .page,
+body.sync-loading .top-actions,
+body.sync-loading .nav-it{pointer-events:none;opacity:.72}
 
 /* Mobile experience: isolated overrides; desktop remains unchanged. */
 .top-actions{display:contents}
@@ -1427,6 +1456,12 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   .pend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;padding:10px 9px;align-items:center}
   .pdesc{min-width:0;white-space:normal;line-height:1.25}
   .pdate{white-space:nowrap}
+  .pend-card-overview{grid-template-columns:1fr}
+  .invoice-main{grid-template-columns:auto minmax(0,1fr);padding:11px 10px}
+  .invoice-value{grid-column:2}
+  .invoice-main>div:last-child{grid-column:1/-1;justify-content:flex-end!important}
+  .invoice-item{grid-template-columns:minmax(0,1fr) auto auto;padding:9px 10px}
+  .cat-remap-bar{grid-template-columns:1fr}
   .overlay{align-items:flex-end;padding:0}
   .modal,.filter-modal{width:100%;max-width:none;max-height:92dvh;margin:0;padding:18px 15px calc(16px + env(safe-area-inset-bottom));border-radius:16px 16px 0 0;overflow:auto}
   .modal h2{font-size:17px}
@@ -1436,6 +1471,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   .fact{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom));z-index:3;margin:8px -15px calc(-16px - env(safe-area-inset-bottom));padding:11px 15px calc(11px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e3e9ef}
   .fact button{flex:1;justify-content:center}
 }
+.cat-row small{font-size:9px;color:var(--hi);background:#EEF2F6;border-radius:10px;padding:2px 6px}
 @media (max-width:380px){
   .sgrid{grid-template-columns:1fr!important}
   .th-fix,.fix-cell{width:136px;min-width:136px}
@@ -1550,16 +1586,14 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <!-- PENDÊNCIAS -->
     <div class="page" id="page-pend">
       <div class="ctrl">
-        <div class="seg">
+        <div class="seg" id="pend-context-seg">
           <button class="sb active" onclick="setCPend('todos')" id="pendctx-todos">Todos</button>
           <button class="sb" onclick="setCPend('pessoal')" id="pendctx-pessoal">Pessoal</button>
           <button class="sb" onclick="setCPend('pj')" id="pendctx-pj">PJ Aluma</button>
         </div>
         <select class="yrsel" id="pend-yr" onchange="renderPend()"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
-        <button class="stats-toggle" id="pend-hidden-btn" onclick="toggleShowHiddenPend()" title="Mostrar ou esconder pendências ocultas">
-          <i class="ti ti-eye"></i> Ocultas
-        </button>
         <div class="mchips" id="pend-chips"></div>
+        <div class="pend-card-tabs" id="pend-card-filters"></div>
       </div>
       <div id="pend-content"></div>
     </div>
@@ -1605,7 +1639,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div id="l-par-wrap" class="hidden">
       <div class="f2">
         <div class="fr"><label>Número de parcelas *</label><input id="l-nparcelas" type="number" min="2" max="60" placeholder="12"></div>
-        <div class="fr"><label>Valor da parcela *</label><input id="l-vparcela" type="number" step="0.01" placeholder="0,00" oninput="calcTotalPar()"></div>
+        <div class="fr"><label>Valor da parcela *</label><input id="l-vparcela" type="text" inputmode="decimal" placeholder="0,00"></div>
       </div>
       <div class="f2">
         <div class="fr"><label>Data da Compra *</label><input id="l-datacompra" type="date"></div>
@@ -1616,7 +1650,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div id="l-rec-wrap" class="hidden">
       <div class="f2">
         <div class="fr"><label>Número de lançamentos *</label><input id="l-nlanc" type="number" min="1" placeholder="12"></div>
-        <div class="fr"><label>Valor do lançamento *</label><input id="l-vlanc" type="number" step="0.01" placeholder="0,00"></div>
+        <div class="fr"><label>Valor do lançamento *</label><input id="l-vlanc" type="text" inputmode="decimal" placeholder="0,00"></div>
       </div>
       <div class="f2">
         <div class="fr"><label>Data inicial *</label><input id="l-datainicial" type="date"></div>
@@ -1626,7 +1660,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <!-- único extra -->
     <div id="l-unico-wrap">
       <div class="f2">
-        <div class="fr"><label>Valor (R$) *</label><input id="l-valor" type="number" step="0.01" placeholder="0,00"></div>
+        <div class="fr"><label>Valor (R$) *</label><input id="l-valor" type="text" inputmode="decimal" placeholder="0,00"></div>
         <div class="fr"><label>Data do evento *</label><input id="l-dataevento" type="date"></div>
       </div>
       <div class="f2">
@@ -1679,7 +1713,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div id="pr-par-fields">
       <div class="f2">
         <div class="fr"><label>Número de parcelas *</label><input id="pr-nparcelas" type="number" min="2" max="60" placeholder="12"></div>
-        <div class="fr"><label>Valor da parcela *</label><input id="pr-vparcela" type="number" step="0.01" placeholder="0,00"></div>
+        <div class="fr"><label>Valor da parcela *</label><input id="pr-vparcela" type="text" inputmode="decimal" placeholder="0,00"></div>
       </div>
       <div class="f2">
         <div class="fr"><label>Data da Compra *</label><input id="pr-datacompra" type="date"></div>
@@ -1690,7 +1724,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div id="pr-rec-fields" class="hidden">
       <div class="f2">
         <div class="fr"><label>Número de lançamentos *</label><input id="pr-nlanc" type="number" placeholder="12"></div>
-        <div class="fr"><label>Valor do lançamento *</label><input id="pr-vlanc" type="number" step="0.01" placeholder="0,00"></div>
+        <div class="fr"><label>Valor do lançamento *</label><input id="pr-vlanc" type="text" inputmode="decimal" placeholder="0,00"></div>
       </div>
       <div class="f2">
         <div class="fr"><label>Data inicial *</label><input id="pr-datainicial" type="date"></div>
@@ -1791,6 +1825,11 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
         <div class="cat-box" id="cat-sub-list"></div>
       </div>
     </div>
+    <div class="cat-remap-bar">
+      <div class="cat-usage" id="cat-usage"></div>
+      <select id="cat-remap-target"></select>
+      <button class="btn-g" onclick="moveSelectedCategory()"><i class="ti ti-arrows-exchange"></i> Remanejar</button>
+    </div>
   </div>
 </div>
 
@@ -1803,9 +1842,9 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
       <div class="fr"><label>Sigla (2 letras)</label><input id="ct-sigla" maxlength="3" placeholder="C6"></div>
       <div class="fr"><label>Cor</label><input id="ct-cor" type="color" value="#1a1a1a" style="height:38px;padding:2px 6px;cursor:pointer"></div>
     </div>
-    <div class="fr"><label>Ajuste manual/inicial (R$)</label><input id="ct-fat" type="number" step="0.01" placeholder="0,00"></div>
+    <div class="fr"><label>Ajuste manual/inicial (R$)</label><input id="ct-fat" type="text" inputmode="decimal" placeholder="0,00"></div>
     <div class="f2">
-      <div class="fr"><label>Limite (R$)</label><input id="ct-lim" type="number" step="0.01" placeholder="10000,00"></div>
+      <div class="fr"><label>Limite (R$)</label><input id="ct-lim" type="text" inputmode="decimal" placeholder="10000,00"></div>
       <div class="fr"><label>Dia vencimento</label><input id="ct-venc" type="number" min="1" max="31" placeholder="10"></div>
     </div>
     <div class="fr"><label>Dia fechamento</label><input id="ct-fecha" type="number" min="1" max="31" placeholder="3"></div>
@@ -17379,9 +17418,10 @@ let nid=741, ncid=10, nrid=1;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
 let lancSort={key:"data",dir:"asc"};
 let hiddenPendIds=[], showHiddenPend=false;
+let pendCollapsedDays=new Set(), pendExpandedCards=new Set();
 
 const LOCAL_STATE_KEY="financeiroFamiliaState";
-const DATASET_VERSION="financeiro-stable-v1";
+const DATASET_VERSION="financeiro-stable-v2-safe-sync";
 const LEGACY_STATE_KEYS=["financeiroFamiliaState.v5.xlsx20260531.planfix","financeiroFamiliaState.v3.recfix","financeiroFamiliaState.v2"];
 const LOCAL_BACKUP_PREFIX="financeiroFamiliaState.backup.";
 const LOCAL_BACKUP_LAST_KEY="financeiroFamiliaState.backup.last";
@@ -17400,14 +17440,46 @@ let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null, fbUnsub=null;
 let firebaseReady=false, stateLoaded=false, applyingRemote=false, saveTimer=null;
 let appStarted=false, lastLocalUpdatedAt=0;
 let firebaseLoadPromise=null;
+let cloudBaseState=null, cloudRevision=0, localChangeSeq=0;
+let localDirty=false, saveInFlight=false, saveQueued=false, initialServerStateReceived=false;
+let syncRetryDelay=1000;
+const DEVICE_ID_KEY="financeiroFamiliaDeviceId.v1";
+const deviceId=(()=>{
+  try{
+    let id=localStorage.getItem(DEVICE_ID_KEY);
+    if(!id){id="dev-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);localStorage.setItem(DEVICE_ID_KEY,id);}
+    return id;
+  }catch(err){return "dev-"+Math.random().toString(36).slice(2,10);}
+})();
+function nextEntityId(){
+  if(globalThis.crypto?.getRandomValues){
+    const parts=new Uint32Array(2);
+    crypto.getRandomValues(parts);
+    return (parts[0]&0x1fffff)*4294967296+parts[1];
+  }
+  return Date.now()*1000+Math.floor(Math.random()*1000);
+}
 
 /* ─── UTILS ─────────────────────────────────────────────── */
 function fmt(v){return "R$\u00a0"+Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
 function fp(v){return (Math.round(v*10)/10).toFixed(1)+"%"}
 function moneyVal(v){return v>0?fmt(v):""}
 function parseMoney(v){
-  const clean=String(v||"").replace(/[^\d,.-]/g,"").replace(/\./g,"").replace(",",".");
-  const n=parseFloat(clean);
+  let clean=String(v??"").trim().replace(/[^\d,.-]/g,"");
+  if(!clean) return 0;
+  const comma=clean.lastIndexOf(","), dot=clean.lastIndexOf(".");
+  if(comma>=0&&dot>=0){
+    const decimal=comma>dot?",":".";
+    const thousands=decimal===","?/\./g:/,/g;
+    clean=clean.replace(thousands,"").replace(decimal,".");
+  }else if(comma>=0){
+    clean=clean.replace(/\./g,"").replace(",",".");
+  }else if(dot>=0){
+    const parts=clean.split(".");
+    if(parts.length>2) clean=parts.slice(0,-1).join("")+"."+parts.at(-1);
+    else if(parts[1]?.length===3) clean=parts.join("");
+  }
+  const n=Number(clean);
   return isNaN(n)?0:n;
 }
 function planInput({id,value,title,onchange}){
@@ -17463,8 +17535,65 @@ function ctxList(c){return c==="todos"?["pessoal","pj"]:[c]}
 
 /* ─── FIREBASE ──────────────────────────────────────────── */
 function stateForCloud(){
-  normalizeFinanceState();
-  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,updatedAt:Date.now(),updatedBy:fbUser?.uid||"senha-local"};
+  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,
+    revision:cloudRevision,updatedAt:Date.now(),updatedBy:fbUser?.uid||"senha-local",updatedByDevice:deviceId};
+}
+
+function deepClone(value){return value==null?value:JSON.parse(JSON.stringify(value));}
+function sameValue(a,b){return JSON.stringify(a)===JSON.stringify(b);}
+function isPlainObject(v){return !!v&&typeof v==="object"&&!Array.isArray(v);}
+function coreState(data){
+  const src=data||stateForCloud();
+  return deepClone({
+    CATS:src.CATS||{},PLAN:src.PLAN||{},PLAN_SUB:src.PLAN_SUB||{},
+    cartoes:Array.isArray(src.cartoes)?src.cartoes:[],contas:Array.isArray(src.contas)?src.contas:[],
+    lancs:Array.isArray(src.lancs)?src.lancs:[],recs:Array.isArray(src.recs)?src.recs:[],
+    nid:Number(src.nid)||1,ncid:Number(src.ncid)||1,nrid:Number(src.nrid)||1,
+    hiddenPendIds:Array.isArray(src.hiddenPendIds)?src.hiddenPendIds:[]
+  });
+}
+function mergeObjectDelta(base,local,remote){
+  if(sameValue(base,local)) return deepClone(remote);
+  if(!isPlainObject(base)||!isPlainObject(local)||!isPlainObject(remote)) return deepClone(local);
+  const out=deepClone(remote);
+  const keys=new Set([...Object.keys(base),...Object.keys(local)]);
+  for(const key of keys){
+    const hadBase=Object.prototype.hasOwnProperty.call(base,key);
+    const hasLocal=Object.prototype.hasOwnProperty.call(local,key);
+    if(hadBase&&!hasLocal){delete out[key];continue;}
+    if(!hasLocal||sameValue(base[key],local[key])) continue;
+    out[key]=mergeObjectDelta(base[key],local[key],out[key]);
+  }
+  return out;
+}
+function entityKey(item,key){return String(item?.[key]??"");}
+function mergeEntityArray(base,local,remote,key){
+  const baseMap=new Map((base||[]).map(v=>[entityKey(v,key),v]));
+  const localMap=new Map((local||[]).map(v=>[entityKey(v,key),v]));
+  const remoteMap=new Map((remote||[]).map(v=>[entityKey(v,key),deepClone(v)]));
+  for(const [id,baseItem] of baseMap){
+    if(!localMap.has(id)){remoteMap.delete(id);continue;}
+    const localItem=localMap.get(id);
+    if(!sameValue(baseItem,localItem)) remoteMap.set(id,mergeObjectDelta(baseItem,localItem,remoteMap.get(id)||{}));
+  }
+  for(const [id,localItem] of localMap){
+    if(!baseMap.has(id)) remoteMap.set(id,deepClone(localItem));
+  }
+  return [...remoteMap.values()];
+}
+function mergeStateDelta(base,local,remote){
+  const b=coreState(base),l=coreState(local),r=coreState(remote);
+  const out=deepClone(r);
+  for(const key of ["CATS","PLAN","PLAN_SUB"]) out[key]=mergeObjectDelta(b[key],l[key],r[key]);
+  out.lancs=mergeEntityArray(b.lancs,l.lancs,r.lancs,"id");
+  out.recs=mergeEntityArray(b.recs,l.recs,r.recs,"id");
+  out.cartoes=mergeEntityArray(b.cartoes,l.cartoes,r.cartoes,"id");
+  out.contas=mergeEntityArray(b.contas,l.contas,r.contas,"nome");
+  if(!sameValue(b.hiddenPendIds,l.hiddenPendIds)) out.hiddenPendIds=deepClone(l.hiddenPendIds);
+  out.nid=Math.max(Number(r.nid)||1,Number(l.nid)||1);
+  out.ncid=Math.max(Number(r.ncid)||1,Number(l.ncid)||1);
+  out.nrid=Math.max(Number(r.nrid)||1,Number(l.nrid)||1);
+  return out;
 }
 function uniqueStateKeys(){
   return [...new Set([LOCAL_STATE_KEY,...LEGACY_STATE_KEYS])];
@@ -17543,7 +17672,6 @@ function applyCloudState(data){
   recs=Array.isArray(data.recs)?data.recs:recs;
   hiddenPendIds=Array.isArray(data.hiddenPendIds)?data.hiddenPendIds:hiddenPendIds;
   nid=Number(data.nid)||nid; ncid=Number(data.ncid)||ncid; nrid=Number(data.nrid)||nrid;
-  const changed=normalizeFinanceState();
   hydrateCatsFromRealData();
   normalizeCatLists();
   renderAll();
@@ -17554,7 +17682,7 @@ function applyCloudState(data){
     localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify(localState));
     lastLocalUpdatedAt=localState.updatedAt;
   }catch(err){}
-  return changed;
+  return true;
 }
 function normalizePlanAliases(){
   let changed=false;
@@ -17670,7 +17798,7 @@ function ensureC6JuneImports(){
   for(const item of C6_JUNHO_2026_IMPORT){
     const key=item.importKey||lancImportKey(item);
     if(existing.has(key)) continue;
-    lancs.push({id:nid++,...item,importKey:key});
+    lancs.push({id:nextEntityId(),...item,importKey:key});
     existing.add(key);
     changed=true;
   }
@@ -17726,15 +17854,28 @@ function startCloudListener(){
   if(!fbDb||fbUnsub) return;
   firebaseReady=true;
   fbDoc=fbDb.collection("financeiro").doc("familia");
-  fbUnsub=fbDoc.onSnapshot(snap=>{
+  document.body.classList.add("sync-loading");
+  fbUnsub=fbDoc.onSnapshot({includeMetadataChanges:true},snap=>{
+    if(snap.metadata.fromCache&&!initialServerStateReceived){
+      setSyncStatus("saving");
+      return;
+    }
+    if(snap.metadata.fromCache) return;
     const remote=snap.exists?snap.data():null;
-    const remoteUpdated=Number(remote?.updatedAt)||0;
-    let changed=false;
-    if(remote&&isUsableSavedState(remote)&&remoteUpdated>=lastLocalUpdatedAt) changed=applyCloudState(remote);
-    const importChanged=ensureC6JuneImports();
-    if(importChanged){changed=true;renderAll();}
+    initialServerStateReceived=true;
+    document.body.classList.remove("sync-loading");
+    if(!snap.exists||!isUsableSavedState(remote)){
+      stateLoaded=false;
+      setSyncStatus("error");
+      console.error("Documento principal ausente ou inválido. Gravação bloqueada para proteger os dados.");
+      return;
+    }
+    if(!localDirty&&!saveInFlight){
+      applyCloudState(remote);
+      cloudBaseState=coreState(remote);
+      cloudRevision=Number(remote.revision)||0;
+    }
     stateLoaded=true;
-    if(!snap.exists||!isUsableSavedState(remote)||changed||lastLocalUpdatedAt>remoteUpdated) scheduleSave();
     setSyncStatus("ok");
   },err=>{
     console.error(err);
@@ -17773,8 +17914,9 @@ async function connectFirebaseSync(){
 }
 function scheduleSave(){
   if(!appStarted||applyingRemote) return;
-  const state=stateForCloud();
-  saveLocalState(state);
+  localDirty=true;
+  localChangeSeq++;
+  saveLocalState({...stateForCloud(),syncPending:true});
   if(!firebaseReady||!stateLoaded||!fbDoc){
     setSyncStatus("saving");
     connectFirebaseSync();
@@ -17782,16 +17924,62 @@ function scheduleSave(){
   }
   setSyncStatus("saving");
   clearTimeout(saveTimer);
-  saveTimer=setTimeout(async()=>{
-    try{
-      await fbDoc.set(state,{merge:true});
-      setSyncStatus("ok");
-    }catch(err){
-      console.error(err);
-      setSyncStatus("error");
-    }
-  },500);
+  saveTimer=setTimeout(flushCloudSave,500);
 }
+async function flushCloudSave(){
+  if(saveInFlight){saveQueued=true;return;}
+  if(!localDirty||!firebaseReady||!stateLoaded||!fbDoc) return;
+  saveInFlight=true;
+  saveQueued=false;
+  const capturedSeq=localChangeSeq;
+  const localSnapshot=coreState();
+  const baseSnapshot=cloudBaseState?deepClone(cloudBaseState):null;
+  let committed=null;
+  try{
+    await fbDb.runTransaction(async tx=>{
+      const snap=await tx.get(fbDoc);
+      const remote=snap.exists?snap.data():null;
+      if(!remote||!isUsableSavedState(remote)) throw new Error("SYNC_REMOTE_INVALID");
+      const remoteCore=coreState(remote);
+      const merged=baseSnapshot?mergeStateDelta(baseSnapshot,localSnapshot,remoteCore):remoteCore;
+      const nextRevision=(Number(remote.revision)||0)+1;
+      const today=new Date().toISOString().slice(0,10);
+      if(remote.lastBackupDay!==today){
+        const backupRef=fbDoc.collection("backups").doc(today);
+        tx.set(backupRef,{...remote,backupCreatedAt:Date.now(),backupReason:"antes-da-primeira-alteracao-do-dia"});
+      }
+      committed={...merged,dataVersion:DATASET_VERSION,revision:nextRevision,updatedAt:Date.now(),
+        updatedBy:fbUser?.uid||"senha-local",updatedByDevice:deviceId,lastBackupDay:today};
+      tx.set(fbDoc,committed);
+    });
+    cloudBaseState=coreState(committed);
+    cloudRevision=Number(committed.revision)||cloudRevision;
+    if(localChangeSeq===capturedSeq){
+      localDirty=false;
+      syncRetryDelay=1000;
+      applyCloudState(committed);
+      saveLocalState({...committed,syncPending:false});
+      setSyncStatus("ok");
+    }else{
+      localDirty=true;
+      saveQueued=true;
+    }
+  }catch(err){
+    console.error("Falha ao salvar sem conflito",err);
+    localDirty=true;
+    saveLocalState({...stateForCloud(),syncPending:true,syncErrorAt:Date.now()});
+    setSyncStatus("error");
+    syncRetryDelay=Math.min(syncRetryDelay*2,30000);
+  }finally{
+    saveInFlight=false;
+    if(saveQueued||localDirty){
+      saveQueued=false;
+      clearTimeout(saveTimer);
+      saveTimer=setTimeout(flushCloudSave,localDirty?syncRetryDelay:700);
+    }
+  }
+}
+window.addEventListener("online",()=>{if(localDirty){syncRetryDelay=1000;flushCloudSave();}});
 function loadExternalScript(src){
   return new Promise((resolve,reject)=>{
     const existing=[...document.scripts].find(s=>s.src===src);
@@ -18371,10 +18559,18 @@ function getCatManagerState(){
   return {ctx,tipo,cats:CATS[ctx][tipo]};
 }
 function renderCatManager(){
-  const {cats}=getCatManagerState();
+  const {ctx,tipo,cats}=getCatManagerState();
   const names=Object.keys(cats);
   if(!catSelected||!cats[catSelected]) catSelected=names[0]||"";
-  document.getElementById("cat-list").innerHTML=names.length?names.map(c=>`<div class="cat-row ${c===catSelected?"active":""}" onclick="selectCat('${escArg(c)}')">${c}</div>`).join(""):`<div class="cat-empty">Nenhuma categoria</div>`;
+  document.getElementById("cat-list").innerHTML=names.length?names.map(c=>{
+    const count=categoryUsage(ctx,tipo,c).items;
+    return `<div class="cat-row ${c===catSelected?"active":""}" onclick="selectCat('${escArg(c)}')"><span>${c}</span>${count?`<small>${count}</small>`:""}</div>`;
+  }).join(""):`<div class="cat-empty">Nenhuma categoria</div>`;
+  const usage=categoryUsage(ctx,tipo,catSelected);
+  const usageEl=document.getElementById("cat-usage");
+  if(usageEl) usageEl.textContent=catSelected?`${usage.items} lançamento(s) e ${usage.plans} planejamento(s) vinculados a ${catSelected}.`:"Selecione uma categoria.";
+  const target=document.getElementById("cat-remap-target");
+  if(target) target.innerHTML=`<option value="">Mover para...</option>`+names.filter(c=>c!==catSelected).map(c=>`<option value="${c}">${c}</option>`).join("");
   renderCatManagerSubs();
 }
 function escArg(v){return String(v).replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
@@ -18387,6 +18583,47 @@ function renderCatManagerSubs(){
   list.innerHTML=subs.length?subs.map(sub=>`<div class="cat-row ${sub===subSelected?"active":""}" onclick="selectSubCat('${escArg(sub)}')">${sub}</div>`).join(""):`<div class="cat-empty">Nenhuma subcategoria</div>`;
 }
 function selectSubCat(sub){subSelected=sub;renderCatManagerSubs();}
+function categoryUsage(ctx,tipo,cat){
+  if(!cat) return {items:0,plans:0};
+  const items=lancs.filter(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===cat).length+
+    recs.filter(r=>r.ctx===ctx&&r.tipo===tipo&&r.cat===cat).length;
+  let plans=0;
+  for(const year of Object.values(PLAN||{})) for(const month of Object.values(year||{})) if(Object.prototype.hasOwnProperty.call(month?.[ctx]||{},cat)) plans++;
+  for(const year of Object.values(PLAN_SUB||{})) for(const month of Object.values(year||{})) if(Object.prototype.hasOwnProperty.call(month?.[ctx]||{},cat)) plans++;
+  return {items,plans};
+}
+function migrateCategoryReferences(ctx,tipo,from,to){
+  if(!from||!to||from===to) return false;
+  const cats=CATS[ctx][tipo];
+  cats[to]=[...new Set([...(cats[to]||[]),...(cats[from]||[])])];
+  for(const l of lancs) if(l.ctx===ctx&&l.tipo===tipo&&l.cat===from) l.cat=to;
+  for(const r of recs) if(r.ctx===ctx&&r.tipo===tipo&&r.cat===from) r.cat=to;
+  for(const year of Object.values(PLAN||{})) for(const month of Object.values(year||{})){
+    const bucket=month?.[ctx];
+    if(bucket&&Object.prototype.hasOwnProperty.call(bucket,from)){
+      bucket[to]=(Number(bucket[to])||0)+(Number(bucket[from])||0);
+      delete bucket[from];
+    }
+  }
+  for(const year of Object.values(PLAN_SUB||{})) for(const month of Object.values(year||{})){
+    const bucket=month?.[ctx];
+    if(!bucket||!Object.prototype.hasOwnProperty.call(bucket,from)) continue;
+    bucket[to]=bucket[to]||{};
+    for(const [sub,value] of Object.entries(bucket[from]||{})) bucket[to][sub]=(Number(bucket[to][sub])||0)+(Number(value)||0);
+    delete bucket[from];
+  }
+  delete cats[from];
+  return true;
+}
+function moveSelectedCategory(){
+  const {ctx,tipo}=getCatManagerState();
+  const target=document.getElementById("cat-remap-target")?.value;
+  if(!catSelected||!target) return alert("Selecione a categoria de destino.");
+  if(!confirm(`Mover tudo de "${catSelected}" para "${target}"?`)) return;
+  migrateCategoryReferences(ctx,tipo,catSelected,target);
+  catSelected=target; subSelected="";
+  syncCats(); syncPRCats(); renderCatManager(); renderAll(); scheduleSave();
+}
 function addCat(){
   const {cats}=getCatManagerState();
   const name=prompt("Nome da categoria:");
@@ -18409,8 +18646,10 @@ function addSubCat(){
   scheduleSave();
 }
 function removeCat(){
-  const {cats}=getCatManagerState();
+  const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected||!confirm(`Excluir categoria "${catSelected}"?`)) return;
+  const usage=categoryUsage(ctx,tipo,catSelected);
+  if(usage.items||usage.plans) return alert("Essa categoria está em uso. Escolha um destino em 'Mover para...' e clique em Remanejar antes de excluí-la.");
   delete cats[catSelected];
   catSelected=""; subSelected="";
   syncCats(); syncPRCats();
@@ -18418,20 +18657,21 @@ function removeCat(){
   scheduleSave();
 }
 function renameCat(){
-  const {cats}=getCatManagerState();
+  const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected) return;
-  const novo=prompt("Novo nome da categoria:",catSelected);
+  const novo=prompt("Novo nome da categoria:",catSelected)?.trim();
   if(!novo||novo===catSelected) return;
-  cats[novo]=cats[catSelected]||[];
-  delete cats[catSelected];
+  migrateCategoryReferences(ctx,tipo,catSelected,novo);
   catSelected=novo;
   syncCats(); syncPRCats();
   renderCatManager();
   scheduleSave();
 }
 function removeSelectedSubCat(){
-  const {cats}=getCatManagerState();
+  const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected||!subSelected||!confirm(`Excluir subcategoria "${subSelected}"?`)) return;
+  const used=lancs.some(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===catSelected&&l.sub===subSelected)||recs.some(r=>r.ctx===ctx&&r.tipo===tipo&&r.cat===catSelected&&r.sub===subSelected);
+  if(used) return alert("Essa subcategoria possui lançamentos. Renomeie-a para remanejar os registros antes de excluir.");
   cats[catSelected]=(cats[catSelected]||[]).filter(s=>s!==subSelected);
   subSelected="";
   syncCats(); syncPRCats();
@@ -18439,10 +18679,19 @@ function removeSelectedSubCat(){
   scheduleSave();
 }
 function renameSubCat(){
-  const {cats}=getCatManagerState();
+  const {ctx,tipo,cats}=getCatManagerState();
   if(!catSelected||!subSelected) return;
-  const novo=prompt("Novo nome da subcategoria:",subSelected);
+  const novo=prompt("Novo nome da subcategoria:",subSelected)?.trim();
   if(!novo||novo===subSelected) return;
+  for(const l of lancs) if(l.ctx===ctx&&l.tipo===tipo&&l.cat===catSelected&&l.sub===subSelected) l.sub=novo;
+  for(const r of recs) if(r.ctx===ctx&&r.tipo===tipo&&r.cat===catSelected&&r.sub===subSelected) r.sub=novo;
+  for(const year of Object.values(PLAN_SUB||{})) for(const month of Object.values(year||{})){
+    const bucket=month?.[ctx]?.[catSelected];
+    if(bucket&&Object.prototype.hasOwnProperty.call(bucket,subSelected)){
+      bucket[novo]=(Number(bucket[novo])||0)+(Number(bucket[subSelected])||0);
+      delete bucket[subSelected];
+    }
+  }
   cats[catSelected]=(cats[catSelected]||[]).map(s=>s===subSelected?novo:s);
   subSelected=novo;
   syncCats(); syncPRCats();
@@ -18705,16 +18954,16 @@ function editarLanc(id){
     document.getElementById("l-status").value=l.status;
     document.getElementById("l-edit-id").value=id;
     if(l.lt==="parcelado"){
-      document.getElementById("l-nparcelas").value=l.nparc||"";
+      document.getElementById("l-nparcelas").value=1;
       document.getElementById("l-vparcela").value=l.valor;
-      document.getElementById("l-datacompra").value=l.seriesStartEvento||l.dataEvento||l.data;
-      document.getElementById("l-primerpag").value=l.seriesStartData||l.data;
+      document.getElementById("l-datacompra").value=l.dataEvento||l.data;
+      document.getElementById("l-primerpag").value=l.data;
     }
     if(l.lt==="recorrente"){
-      document.getElementById("l-nlanc").value=l.repeatCount||l.nparc||"";
+      document.getElementById("l-nlanc").value=1;
       document.getElementById("l-vlanc").value=l.valor;
-      document.getElementById("l-datainicial").value=l.seriesStartEvento||l.dataEvento||l.data;
-      document.getElementById("l-primerpag2").value=l.seriesStartData||l.data;
+      document.getElementById("l-datainicial").value=l.dataEvento||l.data;
+      document.getElementById("l-primerpag2").value=l.data;
     }
   },30);
 }
@@ -18765,91 +19014,129 @@ function pendBucketDay(dateStr){
   return 31;
 }
 function pendDateLabel(dateStr){return String(dateStr||"").split("-").reverse().join("/");}
-function togglePendHidden(id){
-  if(hiddenPendIds.includes(id)) hiddenPendIds=hiddenPendIds.filter(x=>x!==id);
-  else hiddenPendIds=[...hiddenPendIds,id];
-  renderPend();
-  scheduleSave();
+function dueDateISO(yr,mes,day){
+  const last=new Date(yr,mes,0).getDate();
+  return `${yr}-${String(mes).padStart(2,"0")}-${String(Math.min(Number(day)||1,last)).padStart(2,"0")}`;
 }
-function toggleShowHiddenPend(){showHiddenPend=!showHiddenPend;renderPend();}
+function cardForLaunch(l){return cartoes.find(c=>l.cartId===c.id||(!l.cartId&&l.cart===c.nome));}
+function togglePendDay(key){
+  if(pendCollapsedDays.has(key)) pendCollapsedDays.delete(key); else pendCollapsedDays.add(key);
+  renderPend();
+}
+function togglePendInvoice(key){
+  if(pendExpandedCards.has(key)) pendExpandedCards.delete(key); else pendExpandedCards.add(key);
+  renderPend();
+}
+function pagarFatura(cardId,yr,mes,ctx){
+  const card=cartoes.find(c=>c.id===cardId);if(!card)return;
+  const items=lancs.filter(l=>l.tipo==="despesa"&&l.status==="pendente"&&l.ano===yr&&l.mes===mes&&cardForLaunch(l)?.id===cardId&&(ctx==="todos"||l.ctx===ctx));
+  if(!items.length)return;
+  const total=items.reduce((s,l)=>s+l.valor,0);
+  if(!confirm(`Marcar a fatura ${card.nome} de ${fmt(total)} como paga?`))return;
+  items.forEach(l=>l.status="concluido");
+  renderAll();scheduleSave();
+}
 
 function renderPend(){
   document.getElementById("pend-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${pendMeses.includes(m)?"active":""}" onclick="togglePendM(${m})">${MN[m]}</div>`).join("");
+  document.getElementById("pend-card-filters").innerHTML=cartoes.map(c=>`
+    <button class="sb ${cPend===`card:${c.id}`?"active":""}" onclick="setCPend('card:${escArg(c.id)}')"><i class="ti ti-credit-card"></i> ${c.nome}</button>`).join("");
+  document.querySelectorAll("#pend-context-seg .sb").forEach(e=>e.classList.toggle("active",e.id===`pendctx-${cPend}`));
 
   const yr=parseInt(document.getElementById("pend-yr").value);
-  const allPends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&l.tipo==="despesa"&&(cPend==="todos"||l.ctx===cPend));
-  const hiddenSet=new Set(hiddenPendIds);
-  const pends=showHiddenPend?allPends:allPends.filter(l=>!hiddenSet.has(l.id));
+  const cardFilter=cPend.startsWith("card:")?cPend.slice(5):"";
+  const ctxFilter=["pessoal","pj"].includes(cPend)?cPend:"todos";
+  const pends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&l.tipo==="despesa"&&
+    (ctxFilter==="todos"||l.ctx===ctxFilter)&&(!cardFilter||cardForLaunch(l)?.id===cardFilter));
   const total=pends.reduce((s,l)=>s+l.valor,0);
-  const hiddenCount=allPends.length-pends.length;
-  const hiddenBtn=document.getElementById("pend-hidden-btn");
-  if(hiddenBtn){
-    hiddenBtn.classList.toggle("active",showHiddenPend);
-    hiddenBtn.innerHTML=`<i class="ti ${showHiddenPend?"ti-eye-off":"ti-eye"}"></i> ${showHiddenPend?"Ocultar ocultas":"Ocultas"}${hiddenCount?` (${hiddenCount})`:""}`;
-  }
 
   let html="";
   if(!pends.length){
     html=`<div class="pend-alert" style="background:var(--te2);border-color:var(--te3)">
       <span style="font-size:13px;font-weight:600;color:var(--te);display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Tudo limpo!</span>
-      <span style="font-size:12px;color:var(--te)">${hiddenCount&&!showHiddenPend?"As pendências desse filtro estão ocultas.":"Nenhuma pendência nos meses selecionados."}</span>
+      <span style="font-size:12px;color:var(--te)">Nenhuma pendência nos meses selecionados.</span>
     </div>`;
   } else {
     html=`<div class="pend-alert" style="background:var(--re2);border-color:var(--re3);margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:var(--re);display:flex;align-items:center;gap:5px"><i class="ti ti-alert-circle"></i> Total pendente</div>
+      <div style="font-size:13px;font-weight:600;color:var(--re);display:flex;align-items:center;gap:5px"><i class="ti ti-alert-circle"></i> Total pendente · ${pends.length} lançamento(s)</div>
       <div style="font-size:18px;font-weight:700;color:var(--re);font-family:var(--fnm)">${fmt(total)}</div>
     </div>`;
 
     const hoje=new Date().toISOString().split("T")[0];
-
-    // Agrupa: Mês > Dia base (10/15/20/31) > Categoria > Itens
-    const mGrupos={};
+    const cardGroups=new Map();
+    const normal=[];
     for(const l of pends){
-      if(!mGrupos[l.mes]) mGrupos[l.mes]={};
-      const bucket=pendBucketDay(l.data);
-      if(!mGrupos[l.mes][bucket]) mGrupos[l.mes][bucket]={};
-      if(!mGrupos[l.mes][bucket][l.cat]) mGrupos[l.mes][bucket][l.cat]=[];
-      mGrupos[l.mes][bucket][l.cat].push(l);
+      const card=cardForLaunch(l);
+      if(!card){normal.push(l);continue;}
+      const key=`${l.mes}|${card.id}`;
+      if(!cardGroups.has(key)) cardGroups.set(key,{card,mes:l.mes,items:[]});
+      cardGroups.get(key).items.push(l);
     }
+    const visibleCards=[...cardGroups.values()];
+    if(visibleCards.length){
+      html+=`<div class="pend-card-overview">${visibleCards.map(g=>{
+        const value=g.items.reduce((s,l)=>s+l.valor,0);
+        return `<div class="pend-card-mini"><div class="pend-card-mini-top"><div class="pend-card-mini-name"><span class="cart-icon" style="width:28px;height:28px;border-radius:7px;background:${g.card.cor}">${g.card.sigla}</span>${g.card.nome}</div><button class="ico-btn ed" onclick="abrirModalCart('${escArg(g.card.id)}')" title="Editar cartão"><i class="ti ti-edit"></i></button></div><div class="pend-card-mini-value">${fmt(value)}</div><div class="pend-card-mini-meta">Fatura ${MN[g.mes]} · vence dia ${g.card.venc} · ${g.items.length} compra(s)</div></div>`;
+      }).join("")}</div>`;
+    }
+
+    const mGrupos={};
+    const ensureDay=(mes,day)=>{
+      if(!mGrupos[mes])mGrupos[mes]={};
+      if(!mGrupos[mes][day])mGrupos[mes][day]={normal:[],cards:[]};
+      return mGrupos[mes][day];
+    };
+    normal.forEach(l=>ensureDay(l.mes,pendBucketDay(l.data)).normal.push(l));
+    visibleCards.forEach(g=>ensureDay(g.mes,Number(g.card.venc)||1).cards.push(g));
 
     for(const mes of Object.keys(mGrupos).sort((a,b)=>a-b)){
       const mBuckets=mGrupos[mes];
-      const mTotal=Object.values(mBuckets).flatMap(d=>Object.values(d).flat()).reduce((s,l)=>s+l.valor,0);
+      const mTotal=Object.values(mBuckets).reduce((sum,d)=>sum+d.normal.reduce((s,l)=>s+l.valor,0)+d.cards.reduce((s,g)=>s+g.items.reduce((a,l)=>a+l.valor,0),0),0);
       html+=`<div class="pend-mes-block">
         <div class="pend-mes-hdr"><span class="pend-mes-nm">${MNF[mes]} ${yr}</span><span class="pend-mes-tot">${fmt(mTotal)}</span></div>
         <div class="pend-wrap">`;
 
-      for(const [bucket,cats] of Object.entries(mBuckets).sort((a,b)=>Number(a[0])-Number(b[0]))){
-        const itemsFlat=Object.values(cats).flat();
+      for(const [bucket,day] of Object.entries(mBuckets).sort((a,b)=>Number(a[0])-Number(b[0]))){
+        const cardItems=day.cards.flatMap(g=>g.items);
+        const itemsFlat=[...day.normal,...cardItems];
         const dtTotal=itemsFlat.reduce((s,l)=>s+l.valor,0);
-        const bucketDate=`${yr}-${String(mes).padStart(2,"0")}-${String(bucket).padStart(2,"0")}`;
-        const isAtras=itemsFlat.some(l=>l.data<hoje), isHoje=itemsFlat.some(l=>l.data===hoje);
-        html+=`<div class="pend-date-hdr" style="${isAtras?"background:var(--re2)":""}">
+        const bucketDate=dueDateISO(yr,Number(mes),Number(bucket));
+        const isAtras=bucketDate<hoje, isHoje=bucketDate===hoje;
+        const dayKey=`${yr}-${mes}-${bucket}`, collapsed=pendCollapsedDays.has(dayKey);
+        html+=`<div class="pend-date-hdr" onclick="togglePendDay('${dayKey}')" style="${isAtras?"background:var(--re2)":""}">
           <div class="pend-date-lbl" style="${isAtras?"color:var(--re)":""}">
-            <i class="ti ti-calendar-event"></i> Dia ${bucket} · até ${pendDateLabel(bucketDate)}${isHoje?" — tem hoje":isAtras?" — tem atrasado":""}
+            <i class="ti ${collapsed?"ti-chevron-right":"ti-chevron-down"}"></i><i class="ti ti-calendar-event"></i> Dia ${bucket} · ${itemsFlat.length} pendência(s)${isHoje?" · vence hoje":isAtras?" · atrasado":""}
           </div>
           <div class="pend-date-tot">${fmt(dtTotal)}</div>
-        </div>`;
+        </div><div class="pend-day-body ${collapsed?"collapsed":""}">`;
 
+        for(const g of day.cards){
+          const invoiceKey=`${yr}-${mes}-${g.card.id}`, expanded=pendExpandedCards.has(invoiceKey);
+          const value=g.items.reduce((s,l)=>s+l.valor,0);
+          html+=`<div class="invoice-row"><div class="invoice-main"><div class="invoice-icon" style="background:${g.card.cor}">${g.card.sigla}</div><div><div class="invoice-title">Fatura ${g.card.nome}</div><div class="invoice-meta">Vence ${pendDateLabel(bucketDate)} · ${g.items.length} compra(s)</div></div><div class="invoice-value">${fmt(value)}</div><div style="display:flex;gap:6px"><button class="ico-btn ed" onclick="togglePendInvoice('${invoiceKey}')" title="${expanded?"Recolher":"Ver compras"}"><i class="ti ${expanded?"ti-chevron-up":"ti-chevron-down"}"></i></button><button class="pay-btn" onclick="pagarFatura('${escArg(g.card.id)}',${yr},${mes},'${ctxFilter}')"><i class="ti ti-check"></i> Pagar</button></div></div><div class="invoice-details ${expanded?"":"hidden"}">${g.items.sort((a,b)=>String(a.dataEvento||a.data).localeCompare(String(b.dataEvento||b.data))).map(l=>`<div class="invoice-item"><div><div class="invoice-item-title">${l.desc}</div><div class="invoice-item-meta">${pendDateLabel(l.dataEvento||l.data)} · ${l.cat} / ${l.sub} · ${l.ctx==="pj"?"PJ Aluma":"Pessoal"}</div></div><div class="invoice-item-value">${fmt(l.valor)}</div><button class="ico-btn ed" onclick="editarLanc(${l.id})" title="Editar lançamento"><i class="ti ti-edit"></i></button></div>`).join("")}</div></div>`;
+        }
+
+        const cats={};
+        for(const l of day.normal){if(!cats[l.cat])cats[l.cat]=[];cats[l.cat].push(l);}
         for(const [cat,items] of Object.entries(cats)){
           const catTotal=items.reduce((s,l)=>s+l.valor,0);
           html+=`<div class="pend-cat-hdr"><span class="pend-cat-nm">${cat}</span><span class="pend-cat-tot">${fmt(catTotal)}</span></div>`;
           for(const l of items.sort((a,b)=>String(a.data).localeCompare(String(b.data)))){
-            const itemHidden=hiddenSet.has(l.id);
             const itemLate=l.data<hoje;
-            html+=`<div class="pend-item ${itemHidden?"is-hidden":""}">
+            html+=`<div class="pend-item">
               <div class="pdot" style="background:${itemLate?"var(--re)":"var(--or)"}"></div>
               <div class="pinfo">
                 <div class="pdesc">${l.desc}</div>
                 <div class="pcat">${pendDateLabel(l.data)} · ${l.sub} · ${l.ctx==="pj"?"PJ Aluma":"Pessoal"} · ${l.inst}</div>
               </div>
               <div class="pval">${fmt(l.valor)}</div>
-              <button class="hide-pend-btn" onclick="togglePendHidden(${l.id})"><i class="ti ${itemHidden?"ti-eye":"ti-eye-off"}"></i> ${itemHidden?"Mostrar":"Esconder"}</button>
+              <button class="ico-btn ed" onclick="editarLanc(${l.id})" title="Editar"><i class="ti ti-edit"></i></button>
               <button class="pay-btn" onclick="pagar(${l.id})"><i class="ti ti-check"></i> Pagar</button>
             </div>`;
           }
         }
+        html+=`</div>`;
       }
       html+=`</div></div>`;
     }
@@ -18907,13 +19194,13 @@ function salvarCart(){
   const sigla=document.getElementById("ct-sigla").value.trim().toUpperCase();
   if(!nome||!sigla)return alert("Preencha nome e sigla.");
   const obj={nome,sigla,cor:document.getElementById("ct-cor").value,
-    fatura:parseFloat(document.getElementById("ct-fat").value)||0,
-    limite:parseFloat(document.getElementById("ct-lim").value)||0,
+    fatura:parseMoney(document.getElementById("ct-fat").value),
+    limite:parseMoney(document.getElementById("ct-lim").value),
     venc:parseInt(document.getElementById("ct-venc").value)||1,
     fecha:parseInt(document.getElementById("ct-fecha").value)||1};
   const id=document.getElementById("ct-edit-id").value;
   if(id){const c=cartoes.find(x=>x.id===id);if(c)Object.assign(c,obj);}
-  else cartoes.push({id:"c"+(ncid++),...obj});
+  else cartoes.push({id:"c"+nextEntityId(),...obj});
   fechar("modal-cart");renderAll();scheduleSave();
 }
 
@@ -19020,11 +19307,18 @@ function salvarLanc(){
     inst,cartId,cart:card?card.nome:"",status:document.getElementById("l-status").value,lt:ltMode};
   const eid=document.getElementById("l-edit-id").value;
   const old=eid?lancs.find(l=>l.id===parseInt(eid)):null;
+  if(old&&(old.seriesId||old.sourceRecId||old.lt==="recorrente"||old.lt==="parcelado")){
+    const mes=parseInt(data.split("-")[1]), ano=parseInt(data.split("-")[0]);
+    const i=lancs.findIndex(l=>l.id===old.id);
+    lancs[i]={...old,...base,lt:old.lt||ltMode,data,dataEvento,mes,ano,seriesOverride:true};
+    fechar("modal-lanc"); renderAll(); scheduleSave();
+    return;
+  }
   if(ltMode==="unico"){
     const mes=parseInt(data.split("-")[1]), ano=parseInt(data.split("-")[0]);
     const obj={...base,data,dataEvento,mes,ano};
     if(old){const i=lancs.findIndex(l=>l.id===old.id);lancs[i]={...old,...obj};}
-    else lancs.push({id:nid++,...obj});
+    else lancs.push({id:nextEntityId(),...obj});
   }else{
     const count=ltMode==="parcelado"
       ?parseInt(document.getElementById("l-nparcelas").value)
@@ -19036,7 +19330,7 @@ function salvarLanc(){
       const efetivacao=addMonthsISO(data,i);
       const evento=ltMode==="recorrente"?addMonthsISO(dataEvento,i):dataEvento;
       const [ano,mes]=efetivacao.split("-").map(Number);
-      lancs.push({id:nid++,...base,data:efetivacao,dataEvento:evento,ano,mes,seriesId,
+      lancs.push({id:nextEntityId(),...base,data:efetivacao,dataEvento:evento,ano,mes,seriesId,
         seriesStartData:data,seriesStartEvento:dataEvento,nparc:count,parc:i+1,repeatCount:count});
     }
   }
@@ -19100,20 +19394,20 @@ function salvarPR(){
       inicio:primeiro.slice(0,7),dataEvento:di,data:primeiro,count};
     let recId=eid;
     if(eid){const r=recs.find(x=>x.id===eid);if(r)Object.assign(r,obj);}
-    else{recId="r"+(nrid++);recs.push({id:recId,...obj});}
+    else{recId="r"+nextEntityId();recs.push({id:recId,...obj});}
     lancs=lancs.filter(l=>l.sourceRecId!==recId);
     for(let i=0;i<count;i++){
       const data=addMonthsISO(primeiro,i);
       const dataEvento=addMonthsISO(di||primeiro,i);
       const [ano,mes]=data.split("-").map(Number);
-      lancs.push({id:nid++,tipo:prTipo,ctx:obj.ctx,desc,valor,data,dataEvento,ano,mes,
+      lancs.push({id:nextEntityId(),tipo:prTipo,ctx:obj.ctx,desc,valor,data,dataEvento,ano,mes,
         cat:obj.cat,sub:obj.sub,inst:obj.inst,cartId,cart:obj.cart,status:"pendente",
         lt:"recorrente",seriesId:`rec-${recId}`,sourceRecId:recId,seriesStartData:primeiro,
         seriesStartEvento:di||primeiro,nparc:count,parc:i+1,repeatCount:count});
     }
   } else {
     const nparc=parseInt(document.getElementById("pr-nparcelas").value)||1;
-    const vparcela=parseFloat(document.getElementById("pr-vparcela").value);
+    const vparcela=parseMoney(document.getElementById("pr-vparcela").value);
     const dataEvento=document.getElementById("pr-datacompra").value;
     const primerpag=document.getElementById("pr-primerpag").value;
     if(!vparcela||!primerpag)return alert("Preencha valor e data do primeiro pagamento.");
@@ -19127,7 +19421,7 @@ function salvarPR(){
     for(let i=0;i<nparc;i++){
       const d=new Date(baseDate);d.setMonth(d.getMonth()+i);
       const ds=d.toISOString().split("T")[0];
-      lancs.push({id:nid++,tipo:prTipo,ctx,desc:`${desc} ${i+1}/${nparc}`,valor:vparcela,data:ds,dataEvento:dataEvento||ds,
+      lancs.push({id:nextEntityId(),tipo:prTipo,ctx,desc:`${desc} ${i+1}/${nparc}`,valor:vparcela,data:ds,dataEvento:dataEvento||ds,
         mes:d.getMonth()+1,ano:d.getFullYear(),cat,sub,inst,cartId,cart:card?card.nome:"",status:"pendente",lt:"parcelado",parc:i+1,nparc});
     }
   }
@@ -19160,6 +19454,7 @@ function importarBackup(ev){
       applyCloudState({...data,dataVersion:DATASET_VERSION,updatedAt:Date.now()});
       saveLocalState(stateForCloud());
       renderAll();
+      scheduleSave();
       alert("Backup restaurado.");
     }catch(err){alert("Não consegui ler esse backup.");}
     ev.target.value="";
@@ -19263,12 +19558,9 @@ hydrateCatsFromRealData();
 normalizeCatLists();
 initPlanSelects();
 loadLocalState();
-const normalizedPlanOnBoot=normalizeFinanceState();
-const importedC6OnBoot=ensureC6JuneImports();
 cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
 appStarted=true;
-if(importedC6OnBoot||normalizedPlanOnBoot) saveLocalState(stateForCloud());
 setGate(!isUnlocked());
 if(isUnlocked()) setTimeout(connectFirebaseSync,300);
 window.addEventListener("load",()=>{if(isUnlocked()) connectFirebaseSync();});
