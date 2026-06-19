@@ -526,6 +526,11 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 .invoice-item-value{font-size:12px;font-weight:700;color:var(--tx);font-family:var(--fnm);white-space:nowrap}
 .cat-remap-bar{margin-top:12px;border:1px solid var(--bd);background:var(--sur2);border-radius:8px;padding:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,220px) auto;gap:8px;align-items:center}
 .cat-usage{font-size:11px;color:var(--tx2)}
+.card-modal{width:min(520px,100%)}
+.card-edit-preview{border:1px solid #DCE3EA;background:#F8FAFC;border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.card-edit-preview-icon{width:44px;height:44px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}
+.card-edit-preview-name{font-size:14px;font-weight:800;color:var(--tx)}
+.card-edit-preview-meta{font-size:10px;color:var(--hi);margin-top:3px}
 
 /* ─── CARTÕES ────────────────────────────────── */
 .cart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
@@ -1184,7 +1189,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
 }
 .cat-head{
   display:grid;
-  grid-template-columns:1fr 28px 28px 28px;
+  grid-template-columns:1fr repeat(5,28px);
   align-items:center;
   gap:6px;
   margin-bottom:8px;
@@ -1228,6 +1233,10 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
   color:#243245;
 }
 .cat-row:hover{background:#F3F6FA}
+.cat-row[draggable="true"]{cursor:grab}
+.cat-row.dragging{opacity:.45;background:#E8F0FE}
+.cat-grip{color:#A7B2BE;font-size:14px;flex:0 0 auto}
+.cat-row-label{display:flex;align-items:center;gap:7px;min-width:0}
 .cat-row.active{
   background:#FDE9C7;
   color:#C04A00;
@@ -1809,6 +1818,8 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
       <div class="cat-col">
         <div class="cat-head">
           <span>Categoria</span>
+          <button onclick="moveSelectedCat(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
+          <button onclick="moveSelectedCat(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
           <button onclick="addCat()" title="Adicionar"><i class="ti ti-plus"></i></button>
           <button onclick="removeCat()" title="Excluir"><i class="ti ti-trash"></i></button>
           <button onclick="renameCat()" title="Renomear"><i class="ti ti-edit"></i></button>
@@ -1818,6 +1829,8 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
       <div class="cat-col">
         <div class="cat-head">
           <span>Subcategoria</span>
+          <button onclick="moveSelectedSub(-1)" title="Mover para cima"><i class="ti ti-arrow-up"></i></button>
+          <button onclick="moveSelectedSub(1)" title="Mover para baixo"><i class="ti ti-arrow-down"></i></button>
           <button onclick="addSubCat()" title="Adicionar"><i class="ti ti-plus"></i></button>
           <button onclick="removeSelectedSubCat()" title="Excluir"><i class="ti ti-trash"></i></button>
           <button onclick="renameSubCat()" title="Renomear"><i class="ti ti-edit"></i></button>
@@ -1835,19 +1848,20 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
 
 <!-- MODAL: CARTÃO -->
 <div class="overlay hidden" id="modal-cart">
-  <div class="modal">
+  <div class="modal card-modal">
     <div class="modal-ttl" id="mcart-title">Novo Cartão <button class="mc-btn" onclick="fechar('modal-cart')"><i class="ti ti-x"></i></button></div>
-    <div class="fr"><label>Nome do cartão</label><input id="ct-nome" placeholder="Ex: C6 Bank"></div>
+    <div class="card-edit-preview"><div class="card-edit-preview-icon" id="ct-preview-icon">CC</div><div><div class="card-edit-preview-name" id="ct-preview-name">Novo cartão</div><div class="card-edit-preview-meta" id="ct-preview-meta">Vencimento e fechamento</div></div></div>
+    <div class="fr"><label>Nome do cartão</label><input id="ct-nome" placeholder="Ex: C6 Bank" oninput="updateCardPreview()"></div>
     <div class="f2">
-      <div class="fr"><label>Sigla (2 letras)</label><input id="ct-sigla" maxlength="3" placeholder="C6"></div>
-      <div class="fr"><label>Cor</label><input id="ct-cor" type="color" value="#1a1a1a" style="height:38px;padding:2px 6px;cursor:pointer"></div>
+      <div class="fr"><label>Sigla (2 letras)</label><input id="ct-sigla" maxlength="3" placeholder="C6" oninput="updateCardPreview()"></div>
+      <div class="fr"><label>Cor</label><input id="ct-cor" type="color" value="#1a1a1a" style="height:38px;padding:2px 6px;cursor:pointer" oninput="updateCardPreview()"></div>
     </div>
     <div class="fr"><label>Ajuste manual/inicial (R$)</label><input id="ct-fat" type="text" inputmode="decimal" placeholder="0,00"></div>
     <div class="f2">
       <div class="fr"><label>Limite (R$)</label><input id="ct-lim" type="text" inputmode="decimal" placeholder="10000,00"></div>
-      <div class="fr"><label>Dia vencimento</label><input id="ct-venc" type="number" min="1" max="31" placeholder="10"></div>
+      <div class="fr"><label>Dia vencimento</label><input id="ct-venc" type="number" min="1" max="31" placeholder="10" oninput="updateCardPreview()"></div>
     </div>
-    <div class="fr"><label>Dia fechamento</label><input id="ct-fecha" type="number" min="1" max="31" placeholder="3"></div>
+    <div class="fr"><label>Dia fechamento</label><input id="ct-fecha" type="number" min="1" max="31" placeholder="3" oninput="updateCardPreview()"></div>
     <input type="hidden" id="ct-edit-id">
     <div class="fact">
       <button class="f-can" onclick="fechar('modal-cart')">Cancelar</button>
@@ -17410,24 +17424,25 @@ const C6_JUNHO_2026_IMPORT=[
   }
 ];
 let recs=[];
+let CAT_ORDER={},SUB_ORDER={};
 let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026;
 let expSubs={};
 let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
 let pg="plan", cPlan="todos", cLanc="todos", cPend="todos";
 let nid=741, ncid=10, nrid=1;
+let lancsEpoch=0;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
 let lancSort={key:"data",dir:"asc"};
 let hiddenPendIds=[], showHiddenPend=false;
 let pendCollapsedDays=new Set(), pendExpandedCards=new Set();
 
 const LOCAL_STATE_KEY="financeiroFamiliaState";
-const DATASET_VERSION="financeiro-stable-v2-safe-sync";
+const DATASET_VERSION="financeiro-v4-collections";
 const LEGACY_STATE_KEYS=["financeiroFamiliaState.v5.xlsx20260531.planfix","financeiroFamiliaState.v3.recfix","financeiroFamiliaState.v2"];
 const LOCAL_BACKUP_PREFIX="financeiroFamiliaState.backup.";
 const LOCAL_BACKUP_LAST_KEY="financeiroFamiliaState.backup.last";
 const APP_PASSWORD="financeiro2026";
 const APP_UNLOCK_KEY="financeiroFamiliaUnlocked.v1";
-const MIN_VALID_LANCS=50;
 const firebaseConfig={
   apiKey:"AIzaSyDz4-JMrFTwtK7zr0CtlYBm_oevG8vOjiw",
   authDomain:"financeiro-b3e63.firebaseapp.com",
@@ -17437,6 +17452,7 @@ const firebaseConfig={
   appId:"1:323755941756:web:ddb0003a290ca8ede70ef9"
 };
 let fbApp=null, fbAuth=null, fbDb=null, fbDoc=null, fbUser=null, fbUnsub=null;
+let v4MetaRef=null,v4LaunchRef=null,v4PlanRef=null,v4RecRef=null,v4CardRef=null,v4AccountRef=null,v4TrashRef=null,v4Unsubs=[],cloudRefreshTimer=null,cloudRefreshRunning=false,remoteRefreshQueued=false;
 let firebaseReady=false, stateLoaded=false, applyingRemote=false, saveTimer=null;
 let appStarted=false, lastLocalUpdatedAt=0;
 let firebaseLoadPromise=null;
@@ -17497,13 +17513,30 @@ const PLAN_CAT_ALIASES={
   "Streamings":"Gastos Extras"
 };
 function canonicalPlanCat(cat){return PLAN_CAT_ALIASES[cat]||cat}
+function ensureCategoryOrders(){
+  for(const ctx of ["pessoal","pj"]){
+    if(!CAT_ORDER[ctx])CAT_ORDER[ctx]={};
+    if(!SUB_ORDER[ctx])SUB_ORDER[ctx]={};
+    for(const tipo of ["despesa","receita"]){
+      const cats=CATS?.[ctx]?.[tipo]||{};
+      const current=Array.isArray(CAT_ORDER[ctx][tipo])?CAT_ORDER[ctx][tipo]:[];
+      CAT_ORDER[ctx][tipo]=[...current.filter(c=>Object.prototype.hasOwnProperty.call(cats,c)),...Object.keys(cats).filter(c=>!current.includes(c))];
+      if(!SUB_ORDER[ctx][tipo])SUB_ORDER[ctx][tipo]={};
+      for(const [cat,subs] of Object.entries(cats)){
+        const subCurrent=Array.isArray(SUB_ORDER[ctx][tipo][cat])?SUB_ORDER[ctx][tipo][cat]:[];
+        SUB_ORDER[ctx][tipo][cat]=[...subCurrent.filter(s=>(subs||[]).includes(s)),...(subs||[]).filter(s=>!subCurrent.includes(s))];
+      }
+    }
+  }
+}
 function getP(yr,m,ctx,cat){return PLAN[yr]?.[m]?.[ctx]?.[canonicalPlanCat(cat)]||0}
 function isReceitaCat(cat){return cat==="Receita"}
 function getPlanCatsForMode(yr,ctxs,mode){
   const cats=new Set();
   for(const ctx of ctxs){
     const localCats=CATS?.[ctx]?.[mode]||{};
-    Object.keys(localCats).forEach(c=>cats.add(canonicalPlanCat(c)));
+    const ordered=CAT_ORDER?.[ctx]?.[mode]||Object.keys(localCats);
+    ordered.forEach(c=>{if(Object.prototype.hasOwnProperty.call(localCats,c))cats.add(canonicalPlanCat(c));});
   }
   for(const l of lancs){
     if(l.ano!=yr||l.tipo!==mode) continue;
@@ -17535,7 +17568,7 @@ function ctxList(c){return c==="todos"?["pessoal","pj"]:[c]}
 
 /* ─── FIREBASE ──────────────────────────────────────────── */
 function stateForCloud(){
-  return {dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,
+  return {dataVersion:DATASET_VERSION,CATS,CAT_ORDER,SUB_ORDER,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,lancsEpoch,hiddenPendIds,
     revision:cloudRevision,updatedAt:Date.now(),updatedBy:fbUser?.uid||"senha-local",updatedByDevice:deviceId};
 }
 
@@ -17545,10 +17578,10 @@ function isPlainObject(v){return !!v&&typeof v==="object"&&!Array.isArray(v);}
 function coreState(data){
   const src=data||stateForCloud();
   return deepClone({
-    CATS:src.CATS||{},PLAN:src.PLAN||{},PLAN_SUB:src.PLAN_SUB||{},
+    CATS:src.CATS||{},CAT_ORDER:src.CAT_ORDER||{},SUB_ORDER:src.SUB_ORDER||{},PLAN:src.PLAN||{},PLAN_SUB:src.PLAN_SUB||{},
     cartoes:Array.isArray(src.cartoes)?src.cartoes:[],contas:Array.isArray(src.contas)?src.contas:[],
     lancs:Array.isArray(src.lancs)?src.lancs:[],recs:Array.isArray(src.recs)?src.recs:[],
-    nid:Number(src.nid)||1,ncid:Number(src.ncid)||1,nrid:Number(src.nrid)||1,
+    nid:Number(src.nid)||1,ncid:Number(src.ncid)||1,nrid:Number(src.nrid)||1,lancsEpoch:Number(src.lancsEpoch)||0,
     hiddenPendIds:Array.isArray(src.hiddenPendIds)?src.hiddenPendIds:[]
   });
 }
@@ -17584,8 +17617,19 @@ function mergeEntityArray(base,local,remote,key){
 function mergeStateDelta(base,local,remote){
   const b=coreState(base),l=coreState(local),r=coreState(remote);
   const out=deepClone(r);
-  for(const key of ["CATS","PLAN","PLAN_SUB"]) out[key]=mergeObjectDelta(b[key],l[key],r[key]);
-  out.lancs=mergeEntityArray(b.lancs,l.lancs,r.lancs,"id");
+  for(const key of ["CATS","CAT_ORDER","SUB_ORDER","PLAN","PLAN_SUB"]) out[key]=mergeObjectDelta(b[key],l[key],r[key]);
+  const localReset=l.lancsEpoch>b.lancsEpoch;
+  const remoteReset=r.lancsEpoch>b.lancsEpoch;
+  if(localReset&&(!remoteReset||l.lancsEpoch>=r.lancsEpoch)){
+    out.lancs=deepClone(l.lancs);
+    out.lancsEpoch=l.lancsEpoch;
+  }else if(remoteReset){
+    out.lancs=deepClone(r.lancs);
+    out.lancsEpoch=r.lancsEpoch;
+  }else{
+    out.lancs=mergeEntityArray(b.lancs,l.lancs,r.lancs,"id");
+    out.lancsEpoch=Math.max(b.lancsEpoch,l.lancsEpoch,r.lancsEpoch);
+  }
   out.recs=mergeEntityArray(b.recs,l.recs,r.recs,"id");
   out.cartoes=mergeEntityArray(b.cartoes,l.cartoes,r.cartoes,"id");
   out.contas=mergeEntityArray(b.contas,l.contas,r.contas,"nome");
@@ -17664,20 +17708,23 @@ function applyCloudState(data){
   if(!isUsableSavedState(data)) return false;
   applyingRemote=true;
   CATS=data.CATS||CATS;
+  CAT_ORDER=data.CAT_ORDER||{};
+  SUB_ORDER=data.SUB_ORDER||{};
   PLAN=data.PLAN||PLAN;
   PLAN_SUB=data.PLAN_SUB||PLAN_SUB;
   cartoes=Array.isArray(data.cartoes)?data.cartoes:cartoes;
   contas=Array.isArray(data.contas)?data.contas:contas;
   lancs=Array.isArray(data.lancs)?data.lancs:lancs;
+  lancsEpoch=Number(data.lancsEpoch)||0;
   recs=Array.isArray(data.recs)?data.recs:recs;
   hiddenPendIds=Array.isArray(data.hiddenPendIds)?data.hiddenPendIds:hiddenPendIds;
   nid=Number(data.nid)||nid; ncid=Number(data.ncid)||ncid; nrid=Number(data.nrid)||nrid;
-  hydrateCatsFromRealData();
   normalizeCatLists();
+  ensureCategoryOrders();
   renderAll();
   applyingRemote=false;
   try{
-    const localState={dataVersion:DATASET_VERSION,CATS,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,hiddenPendIds,
+    const localState={dataVersion:DATASET_VERSION,CATS,CAT_ORDER,SUB_ORDER,PLAN,PLAN_SUB,cartoes,contas,lancs,recs,nid,ncid,nrid,lancsEpoch,hiddenPendIds,
       updatedAt:Number(data.updatedAt)||Date.now(),updatedBy:data.updatedBy||"nuvem"};
     localStorage.setItem(LOCAL_STATE_KEY,JSON.stringify(localState));
     lastLocalUpdatedAt=localState.updatedAt;
@@ -17782,7 +17829,7 @@ function normalizePlanAliases(){
   return changed;
 }
 function isUsableSavedState(data){
-  return !!(data&&Array.isArray(data.lancs)&&data.lancs.length>=MIN_VALID_LANCS&&data.PLAN&&typeof data.PLAN==="object");
+  return !!(data&&Array.isArray(data.lancs)&&data.PLAN&&typeof data.PLAN==="object"&&data.CATS&&typeof data.CATS==="object");
 }
 
 
@@ -17850,39 +17897,123 @@ async function unlockApp(){
   if(msg) msg.textContent="";
   await connectFirebaseSync();
 }
-function startCloudListener(){
-  if(!fbDb||fbUnsub) return;
-  firebaseReady=true;
-  fbDoc=fbDb.collection("financeiro").doc("familia");
-  document.body.classList.add("sync-loading");
-  fbUnsub=fbDoc.onSnapshot({includeMetadataChanges:true},snap=>{
-    if(snap.metadata.fromCache&&!initialServerStateReceived){
-      setSyncStatus("saving");
-      return;
+function initV4Refs(){
+  v4MetaRef=fbDb.collection("financeiro_v4").doc("familia");
+  v4LaunchRef=v4MetaRef.collection("lancamentos");
+  v4PlanRef=v4MetaRef.collection("planejamentos");
+  v4RecRef=v4MetaRef.collection("recorrencias");
+  v4CardRef=v4MetaRef.collection("cartoes");
+  v4AccountRef=v4MetaRef.collection("instituicoes");
+  v4TrashRef=v4MetaRef.collection("lixeira");
+  fbDoc=v4MetaRef;
+}
+function planDocumentsFromState(state){
+  const out=new Map();
+  const years=new Set([...Object.keys(state.PLAN||{}),...Object.keys(state.PLAN_SUB||{})]);
+  for(const year of years){
+    const months=new Set([...Object.keys(state.PLAN?.[year]||{}),...Object.keys(state.PLAN_SUB?.[year]||{})]);
+    for(const month of months) for(const ctx of ["pessoal","pj"]){
+      const categories=state.PLAN?.[year]?.[month]?.[ctx]||{};
+      const subcategories=state.PLAN_SUB?.[year]?.[month]?.[ctx]||{};
+      if(!Object.keys(categories).length&&!Object.keys(subcategories).length) continue;
+      const id=`${year}_${String(month).padStart(2,"0")}_${ctx}`;
+      out.set(id,{year:Number(year),month:Number(month),ctx,categories:deepClone(categories),subcategories:deepClone(subcategories)});
     }
-    if(snap.metadata.fromCache) return;
-    const remote=snap.exists?snap.data():null;
-    initialServerStateReceived=true;
-    document.body.classList.remove("sync-loading");
-    if(!snap.exists||!isUsableSavedState(remote)){
-      stateLoaded=false;
-      setSyncStatus("error");
-      console.error("Documento principal ausente ou inválido. Gravação bloqueada para proteger os dados.");
-      return;
+  }
+  return out;
+}
+async function commitV4Operations(ops){
+  for(let i=0;i<ops.length;i+=400){
+    const batch=fbDb.batch();
+    for(const op of ops.slice(i,i+400)){
+      if(op.type==="delete") batch.delete(op.ref);
+      else if(op.merge)batch.set(op.ref,op.data,{merge:true});
+      else batch.set(op.ref,op.data);
     }
-    if(!localDirty&&!saveInFlight){
-      applyCloudState(remote);
-      cloudBaseState=coreState(remote);
-      cloudRevision=Number(remote.revision)||0;
-    }
-    stateLoaded=true;
-    setSyncStatus("ok");
-  },err=>{
-    console.error(err);
-    const msg=document.getElementById("auth-msg");
-    if(msg) msg.textContent="Não foi possível sincronizar com o Firestore.";
-    setSyncStatus("error");
+    await batch.commit();
+  }
+}
+async function waitForV4Initialization(){
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{unsub();reject(new Error("V4_INIT_TIMEOUT"));},30000);
+    const unsub=v4MetaRef.onSnapshot(s=>{
+      if(s.exists&&s.data()?.initializationComplete){clearTimeout(timer);unsub();resolve();}
+    },err=>{clearTimeout(timer);unsub();reject(err);});
   });
+}
+async function initializeV4IfNeeded(){
+  initV4Refs();
+  const existing=await v4MetaRef.get({source:"server"});
+  if(existing.exists){
+    if(!existing.data()?.initializationComplete) await waitForV4Initialization();
+    return;
+  }
+  const legacyRef=fbDb.collection("financeiro").doc("familia");
+  const legacySnap=await legacyRef.get({source:"server"});
+  const legacy=legacySnap.exists&&isUsableSavedState(legacySnap.data())?legacySnap.data():null;
+  let created=false;
+  await fbDb.runTransaction(async tx=>{
+    const current=await tx.get(v4MetaRef);
+    if(current.exists) return;
+    created=true;
+    tx.set(v4MetaRef,{
+      schemaVersion:4,dataVersion:"financeiro-v4-collections",initializationComplete:false,
+      CATS:deepClone(legacy?.CATS||CATS),CAT_ORDER:deepClone(legacy?.CAT_ORDER||{}),SUB_ORDER:deepClone(legacy?.SUB_ORDER||{}),
+      hiddenPendIds:[],nid:1,ncid:Number(legacy?.ncid)||1,nrid:1,lancsEpoch:1,
+      createdAt:Date.now(),createdByDevice:deviceId,migrationNote:"Estrutura v4 iniciada sem lançamentos e recorrências"
+    });
+  });
+  if(!created){await waitForV4Initialization();return;}
+  const planState={PLAN:deepClone(legacy?.PLAN||{}),PLAN_SUB:deepClone(legacy?.PLAN_SUB||{})};
+  const planOps=[...planDocumentsFromState(planState)].map(([id,data])=>({type:"set",ref:v4PlanRef.doc(id),data}));
+  const cardOps=(legacy?.cartoes||[]).map(item=>({type:"set",ref:v4CardRef.doc(String(item.id)),data:deepClone(item)}));
+  const accountOps=(legacy?.contas||[]).map(item=>({type:"set",ref:v4AccountRef.doc(encodeURIComponent(item.nome)),data:deepClone(item)}));
+  await commitV4Operations([...planOps,...cardOps,...accountOps]);
+  await v4MetaRef.set({initializationComplete:true,initializedAt:Date.now()},{merge:true});
+}
+async function readV4State(){
+  const [metaSnap,launchSnap,planSnap,recSnap,cardSnap,accountSnap]=await Promise.all([
+    v4MetaRef.get({source:"server"}),v4LaunchRef.get({source:"server"}),v4PlanRef.get({source:"server"}),v4RecRef.get({source:"server"}),v4CardRef.get({source:"server"}),v4AccountRef.get({source:"server"})
+  ]);
+  if(!metaSnap.exists||!metaSnap.data()?.initializationComplete) throw new Error("V4_NOT_READY");
+  const meta=metaSnap.data(), epoch=Number(meta.lancsEpoch)||0;
+  const nextPlan={},nextPlanSub={};
+  planSnap.forEach(doc=>{
+    const p=doc.data(),y=String(p.year),m=String(p.month),ctx=p.ctx;
+    if(!nextPlan[y])nextPlan[y]={};if(!nextPlan[y][m])nextPlan[y][m]={pessoal:{},pj:{}};
+    if(!nextPlanSub[y])nextPlanSub[y]={};if(!nextPlanSub[y][m])nextPlanSub[y][m]={pessoal:{},pj:{}};
+    nextPlan[y][m][ctx]=p.categories||{};nextPlanSub[y][m][ctx]=p.subcategories||{};
+  });
+  const nextLaunches=[];launchSnap.forEach(doc=>{const data=doc.data();if((Number(data.epoch)||0)===epoch)nextLaunches.push(data);});
+  const nextRecs=[];recSnap.forEach(doc=>nextRecs.push(doc.data()));
+  const nextCards=[];cardSnap.forEach(doc=>nextCards.push(doc.data()));
+  const nextAccounts=[];accountSnap.forEach(doc=>nextAccounts.push(doc.data()));
+  return {dataVersion:DATASET_VERSION,CATS:meta.CATS||{},CAT_ORDER:meta.CAT_ORDER||{},SUB_ORDER:meta.SUB_ORDER||{},PLAN:nextPlan,PLAN_SUB:nextPlanSub,
+    cartoes:nextCards,contas:nextAccounts,lancs:nextLaunches,recs:nextRecs,
+    nid:Number(meta.nid)||1,ncid:Number(meta.ncid)||1,nrid:Number(meta.nrid)||1,lancsEpoch:epoch,
+    hiddenPendIds:meta.hiddenPendIds||[],revision:Number(meta.revision)||0,updatedAt:Number(meta.updatedAt)||Date.now(),updatedBy:"nuvem-v4"};
+}
+async function refreshV4FromCloud(){
+  if(cloudRefreshRunning||localDirty||saveInFlight){remoteRefreshQueued=true;return;}
+  cloudRefreshRunning=true;
+  try{
+    const remote=await readV4State();
+    applyCloudState(remote);cloudBaseState=coreState(remote);cloudRevision=Number(remote.revision)||0;
+    stateLoaded=true;setSyncStatus("ok");
+  }catch(err){console.error("Falha ao atualizar estrutura v4",err);setSyncStatus("error");}
+  finally{cloudRefreshRunning=false;remoteRefreshQueued=false;}
+}
+function startCloudListener(){
+  if(!fbDb||v4Unsubs.length) return;
+  firebaseReady=true;
+  const changed=snap=>{
+    if(snap.metadata?.fromCache)return;
+    if(localDirty||saveInFlight){remoteRefreshQueued=true;return;}
+    clearTimeout(cloudRefreshTimer);cloudRefreshTimer=setTimeout(refreshV4FromCloud,120);
+  };
+  const failed=err=>{console.error("Listener v4",err);setSyncStatus("error");};
+  v4Unsubs=[v4MetaRef.onSnapshot({includeMetadataChanges:true},changed,failed),v4LaunchRef.onSnapshot({includeMetadataChanges:true},changed,failed),v4PlanRef.onSnapshot({includeMetadataChanges:true},changed,failed),v4RecRef.onSnapshot({includeMetadataChanges:true},changed,failed),v4CardRef.onSnapshot({includeMetadataChanges:true},changed,failed),v4AccountRef.onSnapshot({includeMetadataChanges:true},changed,failed)];
+  fbUnsub=()=>{v4Unsubs.forEach(fn=>fn());v4Unsubs=[];};
 }
 async function connectFirebaseSync(){
   if(!isUnlocked()) return;
@@ -17910,7 +18041,17 @@ async function connectFirebaseSync(){
     setSyncStatus("error");
     return;
   }
-  startCloudListener();
+  try{
+    document.body.classList.add("sync-loading");setSyncStatus("saving");
+    await initializeV4IfNeeded();
+    const remote=await readV4State();
+    applyCloudState(remote);cloudBaseState=coreState(remote);cloudRevision=Number(remote.revision)||0;
+    stateLoaded=true;firebaseReady=true;initialServerStateReceived=true;document.body.classList.remove("sync-loading");setSyncStatus("ok");
+    startCloudListener();
+  }catch(err){
+    console.error("Não foi possível abrir a estrutura v4",err);stateLoaded=false;document.body.classList.add("sync-loading");setSyncStatus("error");
+    const msg=document.getElementById("auth-msg");if(msg)msg.textContent="Firestore v4 indisponível. Publique as regras novas do Firebase.";
+  }
 }
 function scheduleSave(){
   if(!appStarted||applyingRemote) return;
@@ -17934,32 +18075,42 @@ async function flushCloudSave(){
   const capturedSeq=localChangeSeq;
   const localSnapshot=coreState();
   const baseSnapshot=cloudBaseState?deepClone(cloudBaseState):null;
-  let committed=null;
   try{
-    await fbDb.runTransaction(async tx=>{
-      const snap=await tx.get(fbDoc);
-      const remote=snap.exists?snap.data():null;
-      if(!remote||!isUsableSavedState(remote)) throw new Error("SYNC_REMOTE_INVALID");
-      const remoteCore=coreState(remote);
-      const merged=baseSnapshot?mergeStateDelta(baseSnapshot,localSnapshot,remoteCore):remoteCore;
-      const nextRevision=(Number(remote.revision)||0)+1;
-      const today=new Date().toISOString().slice(0,10);
-      if(remote.lastBackupDay!==today){
-        const backupRef=fbDoc.collection("backups").doc(today);
-        tx.set(backupRef,{...remote,backupCreatedAt:Date.now(),backupReason:"antes-da-primeira-alteracao-do-dia"});
+    if(!baseSnapshot)throw new Error("V4_BASE_MISSING");
+    const ops=[];
+    const metaChanged=["CATS","CAT_ORDER","SUB_ORDER","hiddenPendIds","nid","ncid","nrid","lancsEpoch"].some(k=>!sameValue(baseSnapshot[k],localSnapshot[k]));
+    const metaData={dataVersion:"financeiro-v4-collections",schemaVersion:4,CATS:deepClone(localSnapshot.CATS),CAT_ORDER:deepClone(localSnapshot.CAT_ORDER),SUB_ORDER:deepClone(localSnapshot.SUB_ORDER),hiddenPendIds:deepClone(localSnapshot.hiddenPendIds),nid:localSnapshot.nid,ncid:localSnapshot.ncid,nrid:localSnapshot.nrid,lancsEpoch:localSnapshot.lancsEpoch,revision:Date.now(),updatedAt:Date.now(),updatedByDevice:deviceId};
+    if(metaChanged)ops.push({type:"set",ref:v4MetaRef,data:metaData,merge:true});
+    const addEntityDiff=(baseArr,localArr,ref,key,decorate)=>{
+      const bm=new Map(baseArr.map(x=>[String(x[key]),x])),lm=new Map(localArr.map(x=>[String(x[key]),x]));
+      for(const [id,item] of bm)if(!lm.has(id)){
+        ops.push({type:"set",ref:v4TrashRef.doc(`${Date.now()}_${ref.id}_${id}`),data:{entityType:ref.id,entityId:id,data:deepClone(item),deletedAt:Date.now(),deletedByDevice:deviceId}});
+        ops.push({type:"delete",ref:ref.doc(id)});
       }
-      committed={...merged,dataVersion:DATASET_VERSION,revision:nextRevision,updatedAt:Date.now(),
-        updatedBy:fbUser?.uid||"senha-local",updatedByDevice:deviceId,lastBackupDay:today};
-      tx.set(fbDoc,committed);
-    });
-    cloudBaseState=coreState(committed);
-    cloudRevision=Number(committed.revision)||cloudRevision;
+      for(const [id,item] of lm)if(!bm.has(id)||!sameValue(bm.get(id),item))ops.push({type:"set",ref:ref.doc(id),data:decorate?decorate(item):deepClone(item)});
+    };
+    addEntityDiff(baseSnapshot.lancs,localSnapshot.lancs,v4LaunchRef,"id",item=>{const clean=deepClone(item);delete clean._sel;clean.epoch=localSnapshot.lancsEpoch;return clean;});
+    addEntityDiff(baseSnapshot.recs,localSnapshot.recs,v4RecRef,"id",deepClone);
+    addEntityDiff(baseSnapshot.cartoes,localSnapshot.cartoes,v4CardRef,"id",deepClone);
+    const addAccountDiff=(baseArr,localArr)=>{
+      const bm=new Map(baseArr.map(x=>[x.nome,x])),lm=new Map(localArr.map(x=>[x.nome,x]));
+      for(const [name,item] of bm)if(!lm.has(name)){ops.push({type:"set",ref:v4TrashRef.doc(`${Date.now()}_instituicoes_${encodeURIComponent(name)}`),data:{entityType:"instituicoes",entityId:name,data:deepClone(item),deletedAt:Date.now(),deletedByDevice:deviceId}});ops.push({type:"delete",ref:v4AccountRef.doc(encodeURIComponent(name))});}
+      for(const [name,item] of lm)if(!bm.has(name)||!sameValue(bm.get(name),item))ops.push({type:"set",ref:v4AccountRef.doc(encodeURIComponent(name)),data:deepClone(item)});
+    };
+    addAccountDiff(baseSnapshot.contas,localSnapshot.contas);
+    const bp=planDocumentsFromState(baseSnapshot),lp=planDocumentsFromState(localSnapshot);
+    for(const [id] of bp)if(!lp.has(id))ops.push({type:"delete",ref:v4PlanRef.doc(id)});
+    for(const [id,data] of lp)if(!bp.has(id)||!sameValue(bp.get(id),data))ops.push({type:"set",ref:v4PlanRef.doc(id),data});
+    if(localSnapshot.lancsEpoch>baseSnapshot.lancsEpoch){
+      await v4MetaRef.set(metaData,{merge:true});
+      const metaIndex=ops.findIndex(op=>op.ref.path===v4MetaRef.path);if(metaIndex>=0)ops.splice(metaIndex,1);
+    }
+    await commitV4Operations(ops);
     if(localChangeSeq===capturedSeq){
       localDirty=false;
       syncRetryDelay=1000;
-      applyCloudState(committed);
-      saveLocalState({...committed,syncPending:false});
-      setSyncStatus("ok");
+      await refreshV4FromCloud();
+      saveLocalState({...stateForCloud(),syncPending:false});setSyncStatus("ok");
     }else{
       localDirty=true;
       saveQueued=true;
@@ -17972,6 +18123,7 @@ async function flushCloudSave(){
     syncRetryDelay=Math.min(syncRetryDelay*2,30000);
   }finally{
     saveInFlight=false;
+    if(remoteRefreshQueued&&!localDirty)setTimeout(refreshV4FromCloud,100);
     if(saveQueued||localDirty){
       saveQueued=false;
       clearTimeout(saveTimer);
@@ -18274,13 +18426,10 @@ function renderPlan(){
 
   // Coleta cats
   const catMap=getAllCats(yr,cl);
-  const orderedCats=Object.keys(catMap).sort((a,b)=>{
-    const order=["Moradia","PJ ALUMA","Saúde","Supermercado","Gastos Extras","Lazer","Pessoais","Transporte","Seguros"];
-    const ai=order.indexOf(a),bi=order.indexOf(b);
-    if(ai>=0&&bi>=0) return ai-bi;
-    if(ai>=0) return -1; if(bi>=0) return 1;
-    return a.localeCompare(b);
-  });
+  ensureCategoryOrders();
+  const orderedCats=[];
+  for(const ctx of cl) for(const cat of CAT_ORDER?.[ctx]?.despesa||[]) if(catMap[cat]&&!orderedCats.includes(cat))orderedCats.push(cat);
+  for(const cat of Object.keys(catMap))if(!orderedCats.includes(cat))orderedCats.push(cat);
 
   let tbody="<tbody>";
 
@@ -18351,7 +18500,9 @@ function renderPlan(){
 
   // ── CATEGORIAS + SUBS ────────────────────────────────────────────────────────
   for(const cat of orderedCats){
-    const subs=Object.keys(catMap[cat]);
+    const catCtx=cl.find(ctx=>Object.prototype.hasOwnProperty.call(CATS?.[ctx]?.despesa||{},cat))||cl[0];
+    const preferredSubs=SUB_ORDER?.[catCtx]?.despesa?.[cat]||[];
+    const subs=[...preferredSubs.filter(sub=>catMap[cat][sub]),...Object.keys(catMap[cat]).filter(sub=>!preferredSubs.includes(sub))];
     const catTotM=planMeses.map(m=>getRealDesp(yr,m,cat));
     const catPlanM=planMeses.map(m=>getPlanCtxValue(yr,m,activePlanCtxs(),cat));
     const catSt=stats(m=>getRealDesp(yr,m,cat));
@@ -18373,7 +18524,7 @@ function renderPlan(){
     tbody+=`</tr>`;
 
     // Sub-linhas
-    for(const sub of subs.sort()){
+    for(const sub of subs){
       const sk=`${yr}-${cat}-${sub}`;
       const isOpen=!!expSubs[sk];
       const subTotM=planMeses.map(m=>getRealDesp(yr,m,cat,sub));
@@ -18544,6 +18695,7 @@ function openCatsModal(){
   renderCatManager();
 }
 let catTipoSel="despesa", catSelected="", subSelected="";
+let draggedCat="",draggedSub="";
 function setCatTipo(tipo){
   catTipoSel=tipo;
   document.getElementById("cat-tab-despesa").classList.toggle("active",tipo==="despesa");
@@ -18560,11 +18712,12 @@ function getCatManagerState(){
 }
 function renderCatManager(){
   const {ctx,tipo,cats}=getCatManagerState();
-  const names=Object.keys(cats);
+  ensureCategoryOrders();
+  const names=CAT_ORDER[ctx][tipo];
   if(!catSelected||!cats[catSelected]) catSelected=names[0]||"";
   document.getElementById("cat-list").innerHTML=names.length?names.map(c=>{
     const count=categoryUsage(ctx,tipo,c).items;
-    return `<div class="cat-row ${c===catSelected?"active":""}" onclick="selectCat('${escArg(c)}')"><span>${c}</span>${count?`<small>${count}</small>`:""}</div>`;
+    return `<div class="cat-row ${c===catSelected?"active":""}" draggable="true" ondragstart="startCatDrag(event,'${escArg(c)}')" ondragover="event.preventDefault()" ondrop="dropCat(event,'${escArg(c)}')" ondragend="endCatDrag()" onclick="selectCat('${escArg(c)}')"><span class="cat-row-label"><i class="ti ti-grip-vertical cat-grip"></i><span>${c}</span></span>${count?`<small>${count}</small>`:""}</div>`;
   }).join(""):`<div class="cat-empty">Nenhuma categoria</div>`;
   const usage=categoryUsage(ctx,tipo,catSelected);
   const usageEl=document.getElementById("cat-usage");
@@ -18578,11 +18731,39 @@ function selectCat(cat){catSelected=cat;subSelected="";renderCatManager();}
 function renderCatManagerSubs(){
   const {cats}=getCatManagerState();
   const list=document.getElementById("cat-sub-list");
-  const subs=cats[catSelected]||[];
+  ensureCategoryOrders();
+  const subs=SUB_ORDER?.[getCatManagerState().ctx]?.[getCatManagerState().tipo]?.[catSelected]||cats[catSelected]||[];
   if(!subSelected||!subs.includes(subSelected)) subSelected=subs[0]||"";
-  list.innerHTML=subs.length?subs.map(sub=>`<div class="cat-row ${sub===subSelected?"active":""}" onclick="selectSubCat('${escArg(sub)}')">${sub}</div>`).join(""):`<div class="cat-empty">Nenhuma subcategoria</div>`;
+  list.innerHTML=subs.length?subs.map(sub=>`<div class="cat-row ${sub===subSelected?"active":""}" draggable="true" ondragstart="startSubDrag(event,'${escArg(sub)}')" ondragover="event.preventDefault()" ondrop="dropSub(event,'${escArg(sub)}')" ondragend="endCatDrag()" onclick="selectSubCat('${escArg(sub)}')"><span class="cat-row-label"><i class="ti ti-grip-vertical cat-grip"></i><span>${sub}</span></span></div>`).join(""):`<div class="cat-empty">Nenhuma subcategoria</div>`;
 }
 function selectSubCat(sub){subSelected=sub;renderCatManagerSubs();}
+function reorderList(list,item,target){
+  const next=list.filter(v=>v!==item),index=next.indexOf(target);
+  next.splice(index<0?next.length:index,0,item);return next;
+}
+function startCatDrag(event,name){draggedCat=name;event.currentTarget.classList.add("dragging");event.dataTransfer.effectAllowed="move";}
+function startSubDrag(event,name){draggedSub=name;event.currentTarget.classList.add("dragging");event.dataTransfer.effectAllowed="move";}
+function endCatDrag(){draggedCat="";draggedSub="";document.querySelectorAll(".cat-row.dragging").forEach(e=>e.classList.remove("dragging"));}
+function dropCat(event,target){
+  event.preventDefault();if(!draggedCat||draggedCat===target)return endCatDrag();
+  const {ctx,tipo}=getCatManagerState();CAT_ORDER[ctx][tipo]=reorderList(CAT_ORDER[ctx][tipo],draggedCat,target);
+  catSelected=draggedCat;endCatDrag();renderCatManager();renderPlan();scheduleSave();
+}
+function dropSub(event,target){
+  event.preventDefault();if(!draggedSub||draggedSub===target)return endCatDrag();
+  const {ctx,tipo,cats}=getCatManagerState();const next=reorderList(SUB_ORDER[ctx][tipo][catSelected],draggedSub,target);
+  SUB_ORDER[ctx][tipo][catSelected]=next;cats[catSelected]=[...next];subSelected=draggedSub;
+  endCatDrag();renderCatManagerSubs();renderPlan();scheduleSave();
+}
+function moveInList(list,item,delta){const i=list.indexOf(item),j=i+delta;if(i<0||j<0||j>=list.length)return list;const next=[...list];[next[i],next[j]]=[next[j],next[i]];return next;}
+function moveSelectedCat(delta){
+  if(!catSelected)return;const {ctx,tipo}=getCatManagerState();const next=moveInList(CAT_ORDER[ctx][tipo],catSelected,delta);if(next===CAT_ORDER[ctx][tipo])return;
+  CAT_ORDER[ctx][tipo]=next;renderCatManager();renderPlan();scheduleSave();
+}
+function moveSelectedSub(delta){
+  if(!catSelected||!subSelected)return;const {ctx,tipo,cats}=getCatManagerState();const current=SUB_ORDER[ctx][tipo][catSelected];const next=moveInList(current,subSelected,delta);if(next===current)return;
+  SUB_ORDER[ctx][tipo][catSelected]=next;cats[catSelected]=[...next];renderCatManagerSubs();renderPlan();scheduleSave();
+}
 function categoryUsage(ctx,tipo,cat){
   if(!cat) return {items:0,plans:0};
   const items=lancs.filter(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===cat).length+
@@ -18596,6 +18777,11 @@ function migrateCategoryReferences(ctx,tipo,from,to){
   if(!from||!to||from===to) return false;
   const cats=CATS[ctx][tipo];
   cats[to]=[...new Set([...(cats[to]||[]),...(cats[from]||[])])];
+  ensureCategoryOrders();
+  const catOrder=CAT_ORDER[ctx][tipo],targetExists=catOrder.includes(to);
+  CAT_ORDER[ctx][tipo]=targetExists?catOrder.filter(c=>c!==from):catOrder.map(c=>c===from?to:c);
+  SUB_ORDER[ctx][tipo][to]=[...new Set([...(SUB_ORDER[ctx][tipo][to]||[]),...(SUB_ORDER[ctx][tipo][from]||[])])];
+  delete SUB_ORDER[ctx][tipo][from];
   for(const l of lancs) if(l.ctx===ctx&&l.tipo===tipo&&l.cat===from) l.cat=to;
   for(const r of recs) if(r.ctx===ctx&&r.tipo===tipo&&r.cat===from) r.cat=to;
   for(const year of Object.values(PLAN||{})) for(const month of Object.values(year||{})){
@@ -18626,21 +18812,23 @@ function moveSelectedCategory(){
 }
 function addCat(){
   const {cats}=getCatManagerState();
-  const name=prompt("Nome da categoria:");
+  const name=prompt("Nome da categoria:")?.trim();
   if(!name) return;
   if(!cats[name]) cats[name]=[];
-  catSelected=name.trim(); subSelected="";
+  catSelected=name; subSelected="";
+  const state=getCatManagerState();ensureCategoryOrders();if(!CAT_ORDER[state.ctx][state.tipo].includes(catSelected))CAT_ORDER[state.ctx][state.tipo].push(catSelected);
   syncCats(); syncPRCats();
   renderCatManager();
   scheduleSave();
 }
 function addSubCat(){
   const {cats}=getCatManagerState();
-  const sub=prompt("Nome da subcategoria:");
+  const sub=prompt("Nome da subcategoria:")?.trim();
   if(!catSelected||!sub) return;
   if(!cats[catSelected]) cats[catSelected]=[];
-  if(!cats[catSelected].includes(sub.trim())) cats[catSelected].push(sub.trim());
-  subSelected=sub.trim();
+  if(!cats[catSelected].includes(sub)) cats[catSelected].push(sub);
+  subSelected=sub;
+  const state=getCatManagerState();ensureCategoryOrders();if(!SUB_ORDER[state.ctx][state.tipo][catSelected].includes(subSelected))SUB_ORDER[state.ctx][state.tipo][catSelected].push(subSelected);
   syncCats(); syncPRCats();
   renderCatManagerSubs();
   scheduleSave();
@@ -18651,6 +18839,7 @@ function removeCat(){
   const usage=categoryUsage(ctx,tipo,catSelected);
   if(usage.items||usage.plans) return alert("Essa categoria está em uso. Escolha um destino em 'Mover para...' e clique em Remanejar antes de excluí-la.");
   delete cats[catSelected];
+  CAT_ORDER[ctx][tipo]=CAT_ORDER[ctx][tipo].filter(c=>c!==catSelected);delete SUB_ORDER[ctx][tipo][catSelected];
   catSelected=""; subSelected="";
   syncCats(); syncPRCats();
   renderCatManager();
@@ -18673,6 +18862,7 @@ function removeSelectedSubCat(){
   const used=lancs.some(l=>l.ctx===ctx&&l.tipo===tipo&&l.cat===catSelected&&l.sub===subSelected)||recs.some(r=>r.ctx===ctx&&r.tipo===tipo&&r.cat===catSelected&&r.sub===subSelected);
   if(used) return alert("Essa subcategoria possui lançamentos. Renomeie-a para remanejar os registros antes de excluir.");
   cats[catSelected]=(cats[catSelected]||[]).filter(s=>s!==subSelected);
+  SUB_ORDER[ctx][tipo][catSelected]=(SUB_ORDER[ctx][tipo][catSelected]||[]).filter(s=>s!==subSelected);
   subSelected="";
   syncCats(); syncPRCats();
   renderCatManagerSubs();
@@ -18693,6 +18883,7 @@ function renameSubCat(){
     }
   }
   cats[catSelected]=(cats[catSelected]||[]).map(s=>s===subSelected?novo:s);
+  SUB_ORDER[ctx][tipo][catSelected]=(SUB_ORDER[ctx][tipo][catSelected]||[]).map(s=>s===subSelected?novo:s);
   subSelected=novo;
   syncCats(); syncPRCats();
   renderCatManagerSubs();
@@ -18927,7 +19118,9 @@ function excluirSelecionados(){
   const ids=lancs.filter(l=>l._sel).map(l=>l.id);
   if(!ids.length) return;
   if(confirm(`Excluir ${ids.length} lançamento(s)?`)){
+    const hadLaunches=lancs.length>0;
     lancs=lancs.filter(l=>!ids.includes(l.id));
+    if(hadLaunches&&!lancs.length) lancsEpoch++;
     renderAll();
     scheduleSave();
   }
@@ -18936,7 +19129,7 @@ function cancelarSelecaoLanc(){
   lancs.forEach(l=>l._sel=false);
   renderLanc();
 }
-function excluirLanc(id){if(confirm("Excluir lançamento?")){lancs=lancs.filter(l=>l.id!==id);renderAll();scheduleSave();}}
+function excluirLanc(id){if(confirm("Excluir lançamento?")){const hadLaunches=lancs.length>0;lancs=lancs.filter(l=>l.id!==id);if(hadLaunches&&!lancs.length)lancsEpoch++;renderAll();scheduleSave();}}
 function editarLanc(id){
   const l=lancs.find(x=>x.id===id);if(!l)return;
   abrirModalLanc();
@@ -18969,8 +19162,10 @@ function editarLanc(id){
 }
 function excluirRec(id){
   if(confirm("Excluir recorrente e seus lançamentos vinculados?")){
+    const hadLaunches=lancs.length>0;
     recs=recs.filter(r=>r.id!==id);
     lancs=lancs.filter(l=>l.sourceRecId!==id);
+    if(hadLaunches&&!lancs.length) lancsEpoch++;
     renderAll();
     scheduleSave();
   }
@@ -19185,8 +19380,18 @@ function abrirModalCart(id){
     document.getElementById("ct-lim").value=c.limite;
     document.getElementById("ct-venc").value=c.venc;
     document.getElementById("ct-fecha").value=c.fecha;
-  } else ["ct-nome","ct-sigla","ct-fat","ct-lim","ct-venc","ct-fecha"].forEach(x=>document.getElementById(x).value="");
+  } else { ["ct-nome","ct-sigla","ct-fat","ct-lim","ct-venc","ct-fecha"].forEach(x=>document.getElementById(x).value="");document.getElementById("ct-cor").value="#1a1a1a"; }
+  updateCardPreview();
   document.getElementById("modal-cart").classList.remove("hidden");
+}
+function updateCardPreview(){
+  const name=document.getElementById("ct-nome")?.value.trim()||"Novo cartão";
+  const sigla=document.getElementById("ct-sigla")?.value.trim().toUpperCase()||"CC";
+  const cor=document.getElementById("ct-cor")?.value||"#1a1a1a";
+  const venc=document.getElementById("ct-venc")?.value||"—",fecha=document.getElementById("ct-fecha")?.value||"—";
+  const icon=document.getElementById("ct-preview-icon");if(icon){icon.textContent=sigla;icon.style.background=cor;}
+  const title=document.getElementById("ct-preview-name");if(title)title.textContent=name;
+  const meta=document.getElementById("ct-preview-meta");if(meta)meta.textContent=`Vence dia ${venc} · fecha dia ${fecha}`;
 }
 function excluirCart(id){if(confirm("Excluir cartão?")){cartoes=cartoes.filter(c=>c.id!==id);renderAll();scheduleSave();}}
 function salvarCart(){
@@ -19451,7 +19656,7 @@ function importarBackup(ev){
       if(!isUsableSavedState(data)) return alert("Esse arquivo não parece ser um backup válido do financeiro.");
       if(!confirm("Restaurar este backup? Os dados atuais serão guardados em backup interno antes da troca.")) return;
       backupCurrentLocalState();
-      applyCloudState({...data,dataVersion:DATASET_VERSION,updatedAt:Date.now()});
+      applyCloudState({...data,dataVersion:DATASET_VERSION,lancsEpoch:Math.max(lancsEpoch,Number(data.lancsEpoch)||0)+1,updatedAt:Date.now()});
       saveLocalState(stateForCloud());
       renderAll();
       scheduleSave();
@@ -19537,7 +19742,7 @@ function restoreLocalBackup(index){
   const msg=`Restaurar esta cópia?\n\n${rescueSummary(entry)}\n\nEla será marcada como a versão mais recente e enviada para sincronização.`;
   if(!confirm(msg)) return;
   backupCurrentLocalState();
-  const restored={...entry.data,dataVersion:DATASET_VERSION,updatedAt:Date.now(),restoredFrom:entry.key};
+  const restored={...entry.data,dataVersion:DATASET_VERSION,lancsEpoch:Math.max(lancsEpoch,Number(entry.data.lancsEpoch)||0)+1,updatedAt:Date.now(),restoredFrom:entry.key};
   applyCloudState(restored);
   saveLocalState(restored);
   stateLoaded=true;
@@ -19554,10 +19759,10 @@ function exportar(){
   const a=document.createElement("a");a.href=u;a.download="financeiro.csv";a.click();URL.revokeObjectURL(u);
 }
 
-hydrateCatsFromRealData();
-normalizeCatLists();
 initPlanSelects();
-loadLocalState();
+// A abertura normal é sempre alimentada pelo Firestore. Cópias locais ficam disponíveis apenas em Resgate.
+PLAN={}; PLAN_SUB={}; cartoes=[]; contas=[]; lancs=[]; recs=[]; hiddenPendIds=[];
+nid=1; ncid=1; nrid=1; lancsEpoch=0;
 cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
 renderAll();
 appStarted=true;
