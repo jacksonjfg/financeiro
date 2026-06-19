@@ -18113,8 +18113,8 @@ async function flushCloudSave(){
     if(!baseSnapshot)throw new Error("V4_BASE_MISSING");
     const ops=[];
     const metaChanged=["CATS","CAT_ORDER","SUB_ORDER","hiddenPendIds","nid","ncid","nrid","lancsEpoch"].some(k=>!sameValue(baseSnapshot[k],localSnapshot[k]));
-    const metaData={dataVersion:"financeiro-v4-collections",schemaVersion:4,CATS:deepClone(localSnapshot.CATS),CAT_ORDER:deepClone(localSnapshot.CAT_ORDER),SUB_ORDER:deepClone(localSnapshot.SUB_ORDER),hiddenPendIds:deepClone(localSnapshot.hiddenPendIds),nid:localSnapshot.nid,ncid:localSnapshot.ncid,nrid:localSnapshot.nrid,lancsEpoch:localSnapshot.lancsEpoch,revision:Date.now(),updatedAt:Date.now(),updatedByDevice:deviceId};
-    if(metaChanged)ops.push({type:"set",ref:v4MetaRef,data:metaData,merge:true});
+    const metaData={dataVersion:"financeiro-v4-collections",schemaVersion:4,initializationComplete:true,CATS:deepClone(localSnapshot.CATS),CAT_ORDER:deepClone(localSnapshot.CAT_ORDER),SUB_ORDER:deepClone(localSnapshot.SUB_ORDER),hiddenPendIds:deepClone(localSnapshot.hiddenPendIds),nid:localSnapshot.nid,ncid:localSnapshot.ncid,nrid:localSnapshot.nrid,lancsEpoch:localSnapshot.lancsEpoch,revision:Date.now(),updatedAt:Date.now(),updatedByDevice:deviceId};
+    if(metaChanged)ops.push({type:"set",ref:v4MetaRef,data:metaData});
     const addEntityDiff=(baseArr,localArr,ref,key,decorate)=>{
       const bm=new Map(baseArr.map(x=>[String(x[key]),x])),lm=new Map(localArr.map(x=>[String(x[key]),x]));
       for(const [id,item] of bm)if(!lm.has(id)){
@@ -18136,7 +18136,7 @@ async function flushCloudSave(){
     for(const [id] of bp)if(!lp.has(id))ops.push({type:"delete",ref:v4PlanRef.doc(id)});
     for(const [id,data] of lp)if(!bp.has(id)||!sameValue(bp.get(id),data))ops.push({type:"set",ref:v4PlanRef.doc(id),data});
     if(localSnapshot.lancsEpoch>baseSnapshot.lancsEpoch){
-      await v4MetaRef.set(metaData,{merge:true});
+      await v4MetaRef.set(metaData);
       const metaIndex=ops.findIndex(op=>op.ref.path===v4MetaRef.path);if(metaIndex>=0)ops.splice(metaIndex,1);
     }
     await commitV4Operations(ops);
