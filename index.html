@@ -1479,6 +1479,7 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div class="top-actions">
     <button class="btn-g" onclick="openCatsModal()"><i class="ti ti-tags"></i> Categorias</button>
     <button class="btn-g" onclick="openInstModal()"><i class="ti ti-building-bank"></i> Instituições</button>
+    <button class="btn-g" onclick="openRescueModal()"><i class="ti ti-lifebuoy"></i> Resgate</button>
     <div class="user-pill" id="user-pill"><span class="sync-dot" id="sync-dot"></span><span id="user-email"></span><button onclick="logoutFirebase()" title="Sair"><i class="ti ti-logout"></i></button></div>
     <button class="btn-g" onclick="exportarBackup()"><i class="ti ti-database-export"></i> Backup</button><button class="btn-g" onclick="document.getElementById('backup-import').click()"><i class="ti ti-database-import"></i> Restaurar</button><input id="backup-import" type="file" accept="application/json,.json" style="display:none" onchange="importarBackup(event)"><button class="btn-g" onclick="exportar()"><i class="ti ti-download"></i> Exportar CSV</button>
     <button class="btn-p" onclick="abrirModalLanc()"><i class="ti ti-plus"></i> Lançamento</button>
@@ -1743,6 +1744,21 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     <div class="modal-ttl">Instituições financeiras <button class="mc-btn" onclick="fechar('modal-inst')"><i class="ti ti-x"></i></button></div>
     <div class="cat-list" id="inst-list"></div>
     <div class="cat-inline" style="margin-top:12px"><input id="inst-new" placeholder="Nova instituição"><button class="f-sav" onclick="addInst()">Adicionar</button></div>
+  </div>
+</div>
+
+<!-- MODAL: RESGATE LOCAL -->
+<div class="overlay hidden" id="modal-rescue">
+  <div class="modal">
+    <div class="modal-ttl">Resgatar backup local <button class="mc-btn" onclick="fechar('modal-rescue')"><i class="ti ti-x"></i></button></div>
+    <div class="empty" style="align-items:flex-start;text-align:left;padding:12px 0">
+      <p style="margin:0;color:var(--tx2)">Use no aparelho/navegador onde os dados estavam corretos. Escolha uma cópia pelo horário e pela quantidade de lançamentos.</p>
+    </div>
+    <div class="cat-inline" style="margin-bottom:12px">
+      <button class="btn-g" onclick="downloadAllLocalBackups()"><i class="ti ti-download"></i> Baixar todos</button>
+      <button class="btn-g" onclick="renderRescueList()"><i class="ti ti-refresh"></i> Atualizar lista</button>
+    </div>
+    <div class="cat-list" id="rescue-list"></div>
   </div>
 </div>
 
@@ -19149,6 +19165,91 @@ function importarBackup(ev){
     ev.target.value="";
   };
   reader.readAsText(file,"utf-8");
+}
+function localBackupEntries(){
+  const entries=[];
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(key===LOCAL_STATE_KEY||key.startsWith(LOCAL_BACKUP_PREFIX)){
+        try{
+          const data=JSON.parse(localStorage.getItem(key));
+          if(data&&Array.isArray(data.lancs)){
+            entries.push({key,data,updatedAt:Number(data.updatedAt)||0,lancs:data.lancs.length,planCount:countPlanCells(data),label:key===LOCAL_STATE_KEY?"Estado atual":key.replace(LOCAL_BACKUP_PREFIX,"Backup ")});
+          }
+        }catch(err){}
+      }
+    }
+  }catch(err){}
+  return entries.sort((a,b)=>b.updatedAt-a.updatedAt||String(b.key).localeCompare(String(a.key)));
+}
+function countPlanCells(data){
+  let n=0;
+  const walk=o=>{
+    if(!o||typeof o!=="object") return;
+    for(const v of Object.values(o)){
+      if(typeof v==="number"&&v>0) n++;
+      else if(v&&typeof v==="object") walk(v);
+    }
+  };
+  walk(data.PLAN); walk(data.PLAN_SUB);
+  return n;
+}
+function rescueSummary(entry){
+  const date=entry.updatedAt?new Date(entry.updatedAt).toLocaleString("pt-BR"):"sem data";
+  return `${date} · ${entry.lancs} lançamentos · ${entry.planCount} planejamentos`;
+}
+function openRescueModal(){
+  document.getElementById("modal-rescue").classList.remove("hidden");
+  renderRescueList();
+}
+function renderRescueList(){
+  const list=document.getElementById("rescue-list");
+  const entries=localBackupEntries();
+  if(!entries.length){
+    list.innerHTML=`<div class="empty"><i class="ti ti-alert-circle"></i><p>Nenhum backup local encontrado neste navegador.</p></div>`;
+    return;
+  }
+  list.innerHTML=entries.map((e,i)=>`
+    <div class="cat-row" style="display:block;padding:12px">
+      <div style="font-weight:800;color:var(--tx)">${e.label}</div>
+      <div style="font-size:12px;color:var(--tx2);margin-top:4px">${rescueSummary(e)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn-g" onclick="downloadLocalBackup(${i})"><i class="ti ti-download"></i> Baixar JSON</button>
+        <button class="btn-p" onclick="restoreLocalBackup(${i})"><i class="ti ti-restore"></i> Restaurar esta cópia</button>
+      </div>
+    </div>`).join("");
+}
+function downloadJsonFile(name,data){
+  const b=new Blob([JSON.stringify(data,null,2)],{type:"application/json;charset=utf-8"});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement("a");
+  a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u);
+}
+function downloadLocalBackup(index){
+  const entry=localBackupEntries()[index];
+  if(!entry) return;
+  downloadJsonFile(`financeiro-resgate-${index+1}-${Date.now()}.json`,entry.data);
+}
+function downloadAllLocalBackups(){
+  const entries=localBackupEntries();
+  if(!entries.length) return alert("Nenhum backup local encontrado neste navegador.");
+  downloadJsonFile(`financeiro-todos-backups-locais-${Date.now()}.json`,entries.map(e=>({key:e.key,summary:rescueSummary(e),data:e.data})));
+}
+function restoreLocalBackup(index){
+  const entry=localBackupEntries()[index];
+  if(!entry) return alert("Backup não encontrado.");
+  const msg=`Restaurar esta cópia?\n\n${rescueSummary(entry)}\n\nEla será marcada como a versão mais recente e enviada para sincronização.`;
+  if(!confirm(msg)) return;
+  backupCurrentLocalState();
+  const restored={...entry.data,dataVersion:DATASET_VERSION,updatedAt:Date.now(),restoredFrom:entry.key};
+  applyCloudState(restored);
+  saveLocalState(restored);
+  stateLoaded=true;
+  renderAll();
+  scheduleSave();
+  fechar("modal-rescue");
+  alert("Cópia restaurada neste navegador. Aguarde o indicador mostrar Sincronizado antes de abrir em outro aparelho.");
 }
 function exportar(){
   const h="ID,Tipo,Contexto,Descricao,Valor,DataEvento,DataEfetivacao,Mes,Ano,Categoria,Subcategoria,Instituicao,Status,Tipo Lanc\n";
