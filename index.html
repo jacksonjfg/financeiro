@@ -218,6 +218,10 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 .sc-val{font-size:20px;font-weight:700;letter-spacing:-.5px;font-family:var(--fnm)}
 .sc-val.g{color:var(--grn)} .sc-val.r{color:var(--re)} .sc-val.o{color:var(--or)}
 .sc-sub{font-size:11px;color:var(--hi);margin-top:3px}
+.sc-plan-balance{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:9px;padding-top:8px;border-top:1px solid var(--bd)}
+.sc-plan-balance span{font-size:9px;font-weight:700;color:var(--hi);text-transform:uppercase}
+.sc-plan-balance strong{font-size:13px;font-weight:700;color:var(--grn)}
+.sc-plan-balance strong.negative{color:var(--re)}
 .pill{
   display:inline-flex;align-items:center;
   padding:3px 8px;border-radius:20px;
@@ -18142,6 +18146,8 @@ async function flushCloudSave(){
     await commitV4Operations(ops);
     if(localChangeSeq===capturedSeq){
       localDirty=false;
+      cloudBaseState=deepClone(localSnapshot);
+      cloudRevision=Number(metaData.revision)||cloudRevision;
       syncRetryDelay=1000;
       await refreshV4FromCloud();
       saveLocalState({...stateForCloud(),syncPending:false});setSyncStatus("ok");
@@ -18417,11 +18423,11 @@ function renderPlan(){
     tPlanDesp+=getPlanSum(yr,m,ctxs,"despesa");
     tPlanRec+=getPlanSum(yr,m,ctxs,"receita");
   }
-  const saldo=tRec-tDesp, pctG=tPlanDesp>0?(tDesp/tPlanDesp)*100:0;
+  const saldo=tRec-tDesp, saldoPlan=tPlanRec-tPlanDesp, pctG=tPlanDesp>0?(tDesp/tPlanDesp)*100:0;
   document.getElementById("plan-sum").innerHTML=`
     <div class="sc"><div class="sc-lbl">Receitas</div><div class="sc-val g">${fmt(tRec)}</div><div class="sc-sub">${planMeses.map(m=>MN[m]).join("+")} ${yr}</div></div>
     <div class="sc"><div class="sc-lbl">Despesas</div><div class="sc-val r">${fmt(tDesp)}</div><div class="pill ${pctG>100?"pill-r":"pill-o"}">${fp(pctG)} do planejado</div></div>
-    <div class="sc"><div class="sc-lbl">Planejado despesas</div><div class="sc-val o">${fmt(tPlanDesp)}</div></div>
+    <div class="sc"><div class="sc-lbl">Planejado despesas</div><div class="sc-val o">${fmt(tPlanDesp)}</div><div class="sc-plan-balance"><span>Saldo planejado</span><strong class="${saldoPlan<0?"negative":""}">${fmt(saldoPlan)}</strong></div></div>
     <div class="sc" style="border-left:3px solid var(--or)"><div class="sc-lbl">Saldo do período</div><div class="sc-val ${saldo>=0?"g":"r"}">${fmt(saldo)}</div><div class="pill ${saldo>=0?"pill-g":"pill-r"}">${saldo>=0?"Positivo":"Negativo"}</div></div>`;
 
   // Calcula min/med/max por cat/sub para todos os meses disponíveis
@@ -18960,7 +18966,22 @@ function deleteSubcategoryCompletely(ctx,tipo,cat,sub){
   CATS[ctx][tipo][cat]=(CATS[ctx][tipo][cat]||[]).filter(s=>s!==sub);
   SUB_ORDER[ctx][tipo][cat]=(SUB_ORDER[ctx][tipo][cat]||[]).filter(s=>s!==sub);
 }
-function confirmCategoryDelete(mode){
+async function persistCategoryMetadataNow(){
+  if(!firebaseReady||!stateLoaded||!v4MetaRef)throw new Error("CATEGORY_CLOUD_NOT_READY");
+  const categorySnapshot={CATS:deepClone(CATS),CAT_ORDER:deepClone(CAT_ORDER),SUB_ORDER:deepClone(SUB_ORDER)};
+  await fbDb.runTransaction(async tx=>{
+    const snap=await tx.get(v4MetaRef);
+    if(!snap.exists)throw new Error("CATEGORY_META_NOT_FOUND");
+    tx.update(v4MetaRef,{...categorySnapshot,revision:Date.now(),updatedAt:Date.now(),updatedByDevice:deviceId});
+  });
+}
+async function verifyCategoryDeletion(state){
+  const snap=await v4MetaRef.get({source:"server"});
+  const remote=snap.data()||{};
+  if(state.kind==="category")return !Object.prototype.hasOwnProperty.call(remote.CATS?.[state.ctx]?.[state.tipo]||{},state.cat);
+  return !(remote.CATS?.[state.ctx]?.[state.tipo]?.[state.cat]||[]).includes(state.sub);
+}
+async function confirmCategoryDelete(mode){
   const state=categoryDeleteState;if(!state)return;
   const target=document.getElementById("cat-delete-target").value;
   if(mode==="move"&&!target)return alert("Selecione para onde os vínculos devem ser movidos.");
@@ -18973,6 +18994,18 @@ function confirmCategoryDelete(mode){
     subSelected=mode==="move"?target:"";
   }
   fechar("modal-cat-delete");categoryDeleteState=null;syncCats();syncPRCats();renderCatManager();renderAll();scheduleSave();
+  clearTimeout(saveTimer);
+  try{
+    setSyncStatus("saving");
+    await persistCategoryMetadataNow();
+    await flushCloudSave();
+    if(!(await verifyCategoryDeletion(state)))throw new Error("CATEGORY_DELETE_NOT_CONFIRMED");
+    setSyncStatus("ok");
+  }catch(err){
+    console.error("Falha ao confirmar exclusão da categoria",err);
+    setSyncStatus("error");
+    alert("A exclusão não foi confirmada na nuvem. Nada será fingido como salvo; verifique a conexão e tente novamente.");
+  }
 }
 
 function setCLanc(v){
