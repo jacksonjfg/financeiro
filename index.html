@@ -452,6 +452,12 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
   display:flex;justify-content:space-between;align-items:center;
   border:1px solid;
 }
+.pend-alert-stack{display:grid;gap:9px;margin-bottom:14px}
+.pend-alert.income{background:#ECFBF1;border-color:#A9E8BD}
+.pend-alert.expense{background:var(--re2);border-color:var(--re3)}
+.edit-scope{margin-top:12px;padding:11px;background:var(--sur2);border:1px solid var(--bd);border-radius:8px}
+.edit-scope-label{font-size:10px;font-weight:700;color:var(--hi);text-transform:uppercase;margin-bottom:7px}
+.edit-scope .lanctype-row{margin-bottom:0}
 .pend-mes-block{margin-bottom:12px}
 .pend-mes-hdr{
   padding:6px 0 8px;
@@ -1619,6 +1625,10 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
     <!-- PENDÊNCIAS -->
     <div class="page" id="page-pend">
       <div class="ctrl">
+        <div class="seg" id="pend-type-seg">
+          <button class="sb active" onclick="setPendTipo('despesa')" id="pendtipo-despesa"><i class="ti ti-arrow-down"></i> Despesas</button>
+          <button class="sb" onclick="setPendTipo('receita')" id="pendtipo-receita"><i class="ti ti-arrow-up"></i> Receitas</button>
+        </div>
         <div class="seg" id="pend-context-seg">
           <button class="sb active" onclick="setCPend('todos')" id="pendctx-todos">Todos</button>
           <button class="sb" onclick="setCPend('pessoal')" id="pendctx-pessoal">Pessoal</button>
@@ -1714,6 +1724,14 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
     <div class="fr"><label>Descrição</label><input id="l-desc" placeholder="Ex: Mercado, Terapia..."></div>
     <div class="fr"><label>Status</label>
       <select id="l-status"><option value="concluido">Concluído</option><option value="pendente">Pendente</option></select>
+    </div>
+    <div class="edit-scope hidden" id="l-edit-scope">
+      <div class="edit-scope-label">Aplicar esta alteração em</div>
+      <div class="lanctype-row">
+        <button type="button" class="lt-btn active" id="l-scope-current" onclick="setEditScope('current')">Somente este</button>
+        <button type="button" class="lt-btn" id="l-scope-future" onclick="setEditScope('future')">Este e futuros</button>
+        <button type="button" class="lt-btn" id="l-scope-all" onclick="setEditScope('all')">Todos</button>
+      </div>
     </div>
     <input type="hidden" id="l-edit-id">
     <div class="fact">
@@ -17466,7 +17484,7 @@ let CAT_ORDER={},SUB_ORDER={};
 let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026;
 let expSubs={};
 let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
-let pg="plan", cPlan="todos", cLanc="todos", cPend="todos";
+let pg="plan", cPlan="todos", cLanc="todos", cPend="todos", pendTipo="despesa", editSeriesScope="current";
 let nid=741, ncid=10, nrid=1;
 let lancsEpoch=0;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
@@ -19248,6 +19266,21 @@ function cancelarSelecaoLanc(){
   renderLanc();
 }
 function excluirLanc(id){if(confirm("Excluir lançamento?")){const hadLaunches=lancs.length>0;lancs=lancs.filter(l=>l.id!==id);if(hadLaunches&&!lancs.length)lancsEpoch++;renderAll();scheduleSave();}}
+function launchSeriesMembers(item){
+  if(!item)return [];
+  if(item.seriesId)return lancs.filter(l=>l.seriesId===item.seriesId);
+  if(item.sourceRecId)return lancs.filter(l=>l.sourceRecId===item.sourceRecId);
+  if(item.lt==="parcelado"&&Number(item.nparc)>1){
+    const baseDesc=String(item.desc||"").replace(/\s+\d+\/\d+\s*$/,"").trim();
+    return lancs.filter(l=>l.lt==="parcelado"&&Number(l.nparc)===Number(item.nparc)&&l.ctx===item.ctx&&l.tipo===item.tipo&&
+      String(l.desc||"").replace(/\s+\d+\/\d+\s*$/,"").trim()===baseDesc&&String(l.dataEvento||"")===String(item.dataEvento||""));
+  }
+  return [item];
+}
+function setEditScope(scope){
+  editSeriesScope=scope;
+  ["current","future","all"].forEach(v=>document.getElementById(`l-scope-${v}`)?.classList.toggle("active",v===scope));
+}
 function editarLanc(id){
   const l=lancs.find(x=>x.id===id);if(!l)return;
   abrirModalLanc();
@@ -19264,6 +19297,9 @@ function editarLanc(id){
     document.getElementById("l-cart").value=l.cartId||cartoes.find(c=>c.nome===l.cart)?.id||"";
     document.getElementById("l-status").value=l.status;
     document.getElementById("l-edit-id").value=id;
+    const hasSeries=launchSeriesMembers(l).length>1;
+    document.getElementById("l-edit-scope").classList.toggle("hidden",!hasSeries);
+    setEditScope("current");
     if(l.lt==="parcelado"){
       document.getElementById("l-nparcelas").value=1;
       document.getElementById("l-vparcela").value=l.valor;
@@ -19313,6 +19349,11 @@ function setCPend(v){
   ["todos","pessoal","pj"].forEach(x=>{const e=document.getElementById("pendctx-"+x);if(e)e.classList.toggle("active",x===v)});
   renderPend();
 }
+function setPendTipo(tipo){
+  pendTipo=tipo;
+  if(tipo==="receita"&&cPend.startsWith("card:"))cPend="todos";
+  renderPend();
+}
 function togglePendM(m){
   if(pendMeses.includes(m)){if(pendMeses.length===1)return;pendMeses=pendMeses.filter(x=>x!==m);}
   else pendMeses=[...pendMeses,m].sort((a,b)=>a-b);
@@ -19353,35 +19394,41 @@ function pagarFatura(cardId,yr,mes,ctx){
 function renderPend(){
   document.getElementById("pend-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${pendMeses.includes(m)?"active":""}" onclick="togglePendM(${m})">${MN[m]}</div>`).join("");
-  document.getElementById("pend-card-filters").innerHTML=cartoes.map(c=>`
-    <button class="sb ${cPend===`card:${c.id}`?"active":""}" onclick="setCPend('card:${escArg(c.id)}')"><i class="ti ti-credit-card"></i> ${c.nome}</button>`).join("");
+  document.getElementById("pendtipo-despesa").classList.toggle("active",pendTipo==="despesa");
+  document.getElementById("pendtipo-receita").classList.toggle("active",pendTipo==="receita");
+  document.getElementById("pend-card-filters").innerHTML=pendTipo==="despesa"?cartoes.map(c=>`
+    <button class="sb ${cPend===`card:${c.id}`?"active":""}" onclick="setCPend('card:${escArg(c.id)}')"><i class="ti ti-credit-card"></i> ${c.nome}</button>`).join(""):"";
   document.querySelectorAll("#pend-context-seg .sb").forEach(e=>e.classList.toggle("active",e.id===`pendctx-${cPend}`));
 
   const yr=parseInt(document.getElementById("pend-yr").value);
   const cardFilter=cPend.startsWith("card:")?cPend.slice(5):"";
   const ctxFilter=["pessoal","pj"].includes(cPend)?cPend:"todos";
-  const pends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&l.tipo==="despesa"&&
-    (ctxFilter==="todos"||l.ctx===ctxFilter)&&(!cardFilter||cardForLaunch(l)?.id===cardFilter));
+  const periodPends=lancs.filter(l=>pendMeses.includes(l.mes)&&l.ano===yr&&l.status==="pendente"&&
+    (ctxFilter==="todos"||l.ctx===ctxFilter));
+  const expensePends=periodPends.filter(l=>l.tipo==="despesa"&&(!cardFilter||cardForLaunch(l)?.id===cardFilter));
+  const incomePends=periodPends.filter(l=>l.tipo==="receita");
+  const pends=pendTipo==="receita"?incomePends:expensePends;
   const total=pends.reduce((s,l)=>s+l.valor,0);
+  const expenseTotal=expensePends.reduce((s,l)=>s+l.valor,0);
+  const incomeTotal=incomePends.reduce((s,l)=>s+l.valor,0);
+  const isIncome=pendTipo==="receita";
 
-  let html="";
+  let html=`<div class="pend-alert-stack">
+    <div class="pend-alert income"><div style="font-size:13px;font-weight:650;color:var(--grn);display:flex;align-items:center;gap:6px"><i class="ti ti-cash"></i> Receitas pendentes · ${incomePends.length} lançamento(s)</div><div style="font-size:18px;font-weight:750;color:var(--grn)">${fmt(incomeTotal)}</div></div>
+    <div class="pend-alert expense"><div style="font-size:13px;font-weight:650;color:var(--re);display:flex;align-items:center;gap:6px"><i class="ti ti-alert-circle"></i> Total pendente · ${expensePends.length} lançamento(s)</div><div style="font-size:18px;font-weight:750;color:var(--re)">${fmt(expenseTotal)}</div></div>
+  </div>`;
   if(!pends.length){
-    html=`<div class="pend-alert" style="background:var(--te2);border-color:var(--te3)">
+    html+=`<div class="pend-alert" style="background:var(--te2);border-color:var(--te3)">
       <span style="font-size:13px;font-weight:600;color:var(--te);display:flex;align-items:center;gap:5px"><i class="ti ti-circle-check"></i> Tudo limpo!</span>
-      <span style="font-size:12px;color:var(--te)">Nenhuma pendência nos meses selecionados.</span>
+      <span style="font-size:12px;color:var(--te)">Nenhuma ${isIncome?"receita":"despesa"} pendente nos meses selecionados.</span>
     </div>`;
   } else {
-    html=`<div class="pend-alert" style="background:var(--re2);border-color:var(--re3);margin-bottom:14px">
-      <div style="font-size:13px;font-weight:600;color:var(--re);display:flex;align-items:center;gap:5px"><i class="ti ti-alert-circle"></i> Total pendente · ${pends.length} lançamento(s)</div>
-      <div style="font-size:18px;font-weight:700;color:var(--re);font-family:var(--fnm)">${fmt(total)}</div>
-    </div>`;
-
     const hoje=new Date().toISOString().split("T")[0];
     const cardGroups=new Map();
     const normal=[];
     for(const l of pends){
       const card=cardForLaunch(l);
-      if(!card){normal.push(l);continue;}
+      if(isIncome||!card){normal.push(l);continue;}
       const key=`${l.mes}|${card.id}`;
       if(!cardGroups.has(key)) cardGroups.set(key,{card,mes:l.mes,items:[]});
       cardGroups.get(key).items.push(l);
@@ -19407,7 +19454,7 @@ function renderPend(){
       const mBuckets=mGrupos[mes];
       const mTotal=Object.values(mBuckets).reduce((sum,d)=>sum+d.normal.reduce((s,l)=>s+l.valor,0)+d.cards.reduce((s,g)=>s+g.items.reduce((a,l)=>a+l.valor,0),0),0);
       html+=`<div class="pend-mes-block">
-        <div class="pend-mes-hdr"><span class="pend-mes-nm">${MNF[mes]} ${yr}</span><span class="pend-mes-tot">${fmt(mTotal)}</span></div>
+        <div class="pend-mes-hdr"><span class="pend-mes-nm">${MNF[mes]} ${yr}</span><span class="pend-mes-tot" style="${isIncome?"color:var(--grn)":""}">${fmt(mTotal)}</span></div>
         <div class="pend-wrap">`;
 
       for(const [bucket,day] of Object.entries(mBuckets).sort((a,b)=>Number(a[0])-Number(b[0]))){
@@ -19421,7 +19468,7 @@ function renderPend(){
           <div class="pend-date-lbl" style="${isAtras?"color:var(--re)":""}">
             <i class="ti ${collapsed?"ti-chevron-right":"ti-chevron-down"}"></i><i class="ti ti-calendar-event"></i> Dia ${bucket} · ${itemsFlat.length} pendência(s)${isHoje?" · vence hoje":isAtras?" · atrasado":""}
           </div>
-          <div class="pend-date-tot">${fmt(dtTotal)}</div>
+          <div class="pend-date-tot" style="${isIncome?"color:var(--grn)":""}">${fmt(dtTotal)}</div>
         </div><div class="pend-day-body ${collapsed?"collapsed":""}">`;
 
         for(const g of day.cards){
@@ -19443,9 +19490,9 @@ function renderPend(){
                 <div class="pdesc">${l.desc}</div>
                 <div class="pcat">${pendDateLabel(l.data)} · ${l.sub} · ${l.ctx==="pj"?"PJ Aluma":"Pessoal"} · ${l.inst}</div>
               </div>
-              <div class="pval">${fmt(l.valor)}</div>
+              <div class="pval" style="${isIncome?"color:var(--grn)":""}">${fmt(l.valor)}</div>
               <button class="ico-btn ed" onclick="editarLanc(${l.id})" title="Editar"><i class="ti ti-edit"></i></button>
-              <button class="pay-btn" onclick="pagar(${l.id})"><i class="ti ti-check"></i> Pagar</button>
+              <button class="pay-btn" onclick="pagar(${l.id})"><i class="ti ti-check"></i> ${isIncome?"Receber":"Pagar"}</button>
             </div>`;
           }
         }
@@ -19537,6 +19584,8 @@ function abrirModalLanc(){
   document.getElementById("l-dataevento").value=new Date().toISOString().split("T")[0];
   document.getElementById("l-data").value=new Date().toISOString().split("T")[0];
   document.getElementById("l-status").value="concluido";
+  document.getElementById("l-edit-scope").classList.add("hidden");
+  setEditScope("current");
   ["l-nparcelas","l-vparcela","l-datacompra","l-primerpag","l-nlanc","l-vlanc","l-datainicial","l-primerpag2"].forEach(id=>document.getElementById(id).value="");
   syncInstOptions("l-inst");
   syncCartOptions("l-cart");
@@ -19632,8 +19681,22 @@ function salvarLanc(){
   const old=eid?lancs.find(l=>l.id===parseInt(eid)):null;
   if(old&&(old.seriesId||old.sourceRecId||old.lt==="recorrente"||old.lt==="parcelado")){
     const mes=parseInt(data.split("-")[1]), ano=parseInt(data.split("-")[0]);
-    const i=lancs.findIndex(l=>l.id===old.id);
-    lancs[i]={...old,...base,lt:old.lt||ltMode,data,dataEvento,mes,ano,seriesOverride:true};
+    const members=launchSeriesMembers(old);
+    const selectedScope=members.length>1?editSeriesScope:"current";
+    const targets=selectedScope==="all"?members:selectedScope==="future"
+      ?members.filter(l=>Number(l.parc)>=Number(old.parc)||(!l.parc&&String(l.data)>=String(old.data)))
+      :[old];
+    const numberedDescription=old.lt==="parcelado"&&/\s+\d+\/\d+\s*$/.test(old.desc||"");
+    const cleanDescription=String(base.desc||"").replace(/\s+\d+\/\d+\s*$/,"").trim();
+    for(const item of targets){
+      const itemBase={...base,desc:numberedDescription?`${cleanDescription} ${item.parc}/${item.nparc}`:base.desc,lt:old.lt||ltMode};
+      Object.assign(item,itemBase,{seriesOverride:true});
+      if(item.id===old.id)Object.assign(item,{data,dataEvento,mes,ano});
+    }
+    if(selectedScope==="all"&&old.sourceRecId){
+      const rec=recs.find(r=>r.id===old.sourceRecId);
+      if(rec)Object.assign(rec,{tipo:base.tipo,ctx:base.ctx,desc:cleanDescription||base.desc,valor:base.valor,cat:base.cat,sub:base.sub,inst:base.inst,cartId:base.cartId,cart:base.cart});
+    }
     fechar("modal-lanc"); renderAll(); scheduleSave();
     return;
   }
