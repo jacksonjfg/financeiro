@@ -19190,6 +19190,8 @@ function renderLanc(){
   document.getElementById("lanc-body").innerHTML=d.length?`
   <div class="fbar" style="border-bottom:1px solid var(--bd);background:#fff">
     <button class="btn-g bulk-delete" onclick="excluirSelecionados()" ${selectedCount?"":"disabled"}><i class="ti ti-trash"></i> Excluir selecionados ${selectedCount?`(${selectedCount})`:""}</button>
+    ${selectedCount?`<button class="btn-g" onclick="alterarStatusSelecionados('pendente')"><i class="ti ti-clock"></i> Marcar pendente</button>
+    <button class="btn-g" style="color:var(--grn);border-color:var(--te3)" onclick="alterarStatusSelecionados('concluido')"><i class="ti ti-circle-check"></i> Marcar concluído</button>`:""}
     ${selectedCount?`<button class="btn-g" onclick="cancelarSelecaoLanc()"><i class="ti ti-x"></i> Cancelar seleção</button>`:""}
   </div>
   <table class="dt"><thead><tr>
@@ -19260,6 +19262,13 @@ function excluirSelecionados(){
     renderAll();
     scheduleSave();
   }
+}
+function alterarStatusSelecionados(status){
+  const selected=lancs.filter(l=>l._sel);
+  if(!selected.length)return;
+  selected.forEach(l=>{l.status=status;delete l._sel;});
+  renderAll();
+  scheduleSave();
 }
 function cancelarSelecaoLanc(){
   lancs.forEach(l=>l._sel=false);
