@@ -18423,7 +18423,7 @@ function renderPlan(){
     tPlanDesp+=getPlanSum(yr,m,ctxs,"despesa");
     tPlanRec+=getPlanSum(yr,m,ctxs,"receita");
   }
-  const saldo=tRec-tDesp, saldoPlan=tPlanRec-tPlanDesp, pctG=tPlanDesp>0?(tDesp/tPlanDesp)*100:0;
+  const saldo=tRec-tDesp, saldoPlan=tRec-tPlanDesp, pctG=tPlanDesp>0?(tDesp/tPlanDesp)*100:0;
   document.getElementById("plan-sum").innerHTML=`
     <div class="sc"><div class="sc-lbl">Receitas</div><div class="sc-val g">${fmt(tRec)}</div><div class="sc-sub">${planMeses.map(m=>MN[m]).join("+")} ${yr}</div></div>
     <div class="sc"><div class="sc-lbl">Despesas</div><div class="sc-val r">${fmt(tDesp)}</div><div class="pill ${pctG>100?"pill-r":"pill-o"}">${fp(pctG)} do planejado</div></div>
