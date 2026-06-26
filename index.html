@@ -1423,16 +1423,17 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
 
 /* Mobile experience: isolated overrides; desktop remains unchanged. */
 .top-actions{display:contents}
+.top-new-launch{font-weight:800}
 @media (max-width:760px){
   :root{--mobile-nav-h:68px}
-  html,body{width:100%;max-width:100%;overflow-x:hidden}
-  body{padding-bottom:env(safe-area-inset-bottom)}
+  html,body{width:100%;max-width:100%;height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  body{padding-bottom:env(safe-area-inset-bottom);position:relative;touch-action:pan-y}
   button,input,select,textarea{font-size:16px}
   button,.btn-g,.btn-p,.stats-toggle,.fbtn,.pay-btn,.hide-pend-btn{min-height:42px}
-  .shell{min-height:100dvh;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));overflow:visible}
-  .main{width:100%;min-width:0;overflow:visible}
-  .content{width:100%;min-width:0;padding:12px 10px 18px;gap:12px}
-  .page{min-width:0;gap:12px}
+  .shell{height:auto!important;min-height:100dvh;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));overflow:visible!important}
+  .main{width:100%;min-width:0;overflow:visible!important}
+  .content{width:100%;min-width:0;padding:12px 10px 18px;gap:12px;overflow:visible!important}
+  .page{min-width:0;gap:12px;overflow:visible!important}
   .sidebar{position:fixed;left:0;right:0;top:auto;bottom:0;z-index:300;width:100%;height:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));padding:0 6px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border:0;border-top:1px solid #dce4ec;box-shadow:0 -6px 22px rgba(28,44,64,.09);backdrop-filter:blur(12px)}
   .logo,.sidebar .nav-lbl,.sidebar .sb-ft{display:none!important}
   .sidebar .nav-sec{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%;height:100%;padding:4px 0;gap:3px;overflow:visible}
@@ -1446,6 +1447,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .top-actions{display:flex;align-items:center;gap:7px;width:100%;padding:0 1px 2px;overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}
   .top-actions::-webkit-scrollbar{display:none}
   .top-actions .btn-g,.top-actions .btn-p,.top-actions .user-pill{flex:0 0 auto;width:auto;min-width:max-content;min-height:40px;margin:0;padding:8px 11px;font-size:12px}
+  .top-actions .top-new-launch{order:-10;position:sticky;left:0;z-index:2;box-shadow:0 8px 20px rgba(255,107,0,.24)}
   .top-actions .user-pill{display:flex;max-width:220px;overflow:hidden}
   .top-actions #user-email{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ctrl{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:stretch;gap:8px;padding:9px}
@@ -1466,7 +1468,9 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .sc-val{font-size:16px;line-height:1.2;overflow-wrap:anywhere}
   .sc-sub{white-space:normal}
   .plan-tbl-outer{width:100%!important;max-width:100%;margin:0;border-radius:10px;overflow:hidden}
-  .plan-tbl-scroll,#lanc-body,#rec-body,.table-scroll{max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  .plan-tbl-scroll{max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
+  #page-lanc,#page-pend{touch-action:pan-y}
+  #lanc-body,#rec-body,.table-scroll{max-width:100%;overflow-x:auto!important;overflow-y:visible!important;overscroll-behavior-x:contain;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;touch-action:pan-x pan-y}
   .ptbl{font-size:11px}
   .th-fix,.fix-cell{width:148px;min-width:148px;padding-left:9px;padding-right:8px}
   .th-mes-grp{width:166px;min-width:166px}
@@ -1552,12 +1556,12 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
     <span class="pg-title" id="pg-title">Planejamento e Controle</span>
     <div class="sp"></div>
     <div class="top-actions">
+    <button class="btn-p top-new-launch" onclick="abrirModalLanc()"><i class="ti ti-plus"></i> LanÃ§amento</button>
     <button class="btn-g" onclick="openCatsModal()"><i class="ti ti-tags"></i> Categorias</button>
     <button class="btn-g" onclick="openInstModal()"><i class="ti ti-building-bank"></i> Instituições</button>
     <button class="btn-g" onclick="openRescueModal()"><i class="ti ti-lifebuoy"></i> Resgate</button>
     <div class="user-pill" id="user-pill"><span class="sync-dot" id="sync-dot"></span><span id="user-email"></span><button onclick="logoutFirebase()" title="Sair"><i class="ti ti-logout"></i></button></div>
     <button class="btn-g" onclick="exportarBackup()"><i class="ti ti-database-export"></i> Backup</button><button class="btn-g" onclick="document.getElementById('backup-import').click()"><i class="ti ti-database-import"></i> Restaurar</button><input id="backup-import" type="file" accept="application/json,.json" style="display:none" onchange="importarBackup(event)"><button class="btn-g" onclick="exportar()"><i class="ti ti-download"></i> Exportar CSV</button>
-    <button class="btn-p" onclick="abrirModalLanc()"><i class="ti ti-plus"></i> Lançamento</button>
     </div>
   </div>
   <div class="content">
