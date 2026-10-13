@@ -231,6 +231,44 @@ html,body{height:100%;font-family:var(--fn);font-size:13px;background:var(--bg);
 .pill-r{background:var(--re2);color:#C0392B}
 .pill-o{background:var(--am2);color:#8A5000}
 
+/* ─── DASHBOARD ───────────────────────────────── */
+.dash-layout{display:flex;flex-direction:column;gap:14px}
+.dash-card{
+  background:var(--sur);border:1px solid var(--bd);
+  border-radius:var(--rlg);box-shadow:var(--sh);overflow:hidden;
+}
+.dash-card-h{
+  padding:12px 14px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:linear-gradient(180deg,#fff,#F8FAFC);
+}
+.dash-card-h strong{font-size:13px;color:var(--tx);letter-spacing:-.1px}
+.dash-muted{font-size:11px;color:var(--hi);font-weight:600}
+.dash-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.dash-table-wrap{overflow:auto;-webkit-overflow-scrolling:touch}
+.dash-table{width:100%;border-collapse:collapse;font-size:12px;min-width:620px}
+.dash-table th{
+  padding:10px 12px;text-align:right;
+  background:#F4F7FA;color:#7D8A99;font-size:10px;
+  text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--bd);
+}
+.dash-table th:first-child,.dash-table td:first-child{text-align:left}
+.dash-table td{padding:11px 12px;text-align:right;border-bottom:1px solid var(--bd)}
+.dash-table tbody tr:nth-child(even) td{background:#FAFBFC}
+.dash-table tbody tr:hover td{background:#F6F9FC}
+.dash-table .month-name{font-weight:750;color:var(--tx)}
+.dash-table .pos{color:var(--grn);font-weight:750}
+.dash-table .neg{color:var(--re);font-weight:750}
+.dash-quarter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px}
+.dash-quarter{
+  border:1px solid var(--bd);background:#FAFBFC;border-radius:10px;
+  padding:12px;display:flex;flex-direction:column;gap:8px;
+}
+.dash-quarter h4{font-size:13px;color:#59657A;margin:0}
+.dash-qrow{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--mu)}
+.dash-qrow strong{color:var(--tx);font-size:12px}
+.dash-qrow strong.pos{color:var(--grn)}.dash-qrow strong.neg{color:var(--re)}
+
 /* ─── TAGS ───────────────────────────────────── */
 .ctag{
   display:inline-flex;padding:2px 6px;
@@ -965,6 +1003,11 @@ html,body{background:linear-gradient(180deg,#F7F8FA 0,#F2F5F8 260px,#F4F6F8 100%
     padding-right:10px;
   }
   .th-mes-grp{min-width:178px;width:178px}
+.th-total-grp{min-width:196px;width:196px}
+.th-total-grp .th-mes-grp-top{background:#FFF7ED}
+.th-total-grp .th-mes-nm{color:#C04A00;font-weight:800}
+.td-total-plan{background:#FFF8EF;font-weight:750}
+.td-total-real{background:#FFF3E3;font-weight:800}
   .th-stats-cols,.td-stats{grid-template-columns:repeat(3,58px)}
   .th-stats-col,.td-stat{padding-left:6px;padding-right:6px}
   .td-plan,.td-real{padding:8px 8px}
@@ -1436,7 +1479,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .page{min-width:0;gap:12px;overflow:visible!important}
   .sidebar{position:fixed;left:0;right:0;top:auto;bottom:0;z-index:300;width:100%;height:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));padding:0 6px env(safe-area-inset-bottom);background:rgba(255,255,255,.97);border:0;border-top:1px solid #dce4ec;box-shadow:0 -6px 22px rgba(28,44,64,.09);backdrop-filter:blur(12px)}
   .logo,.sidebar .nav-lbl,.sidebar .sb-ft{display:none!important}
-  .sidebar .nav-sec{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch;width:100%;height:100%;padding:4px 0;gap:3px;overflow:visible}
+  .sidebar .nav-sec{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:stretch;width:100%;height:100%;padding:4px 0;gap:3px;overflow:visible}
   .sidebar .nav-it{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-width:0;min-height:56px;margin:0;padding:4px 2px;border-radius:8px;font-size:10px;line-height:1.1;text-align:center;white-space:normal}
   .sidebar .nav-it i{font-size:20px;line-height:1}
   .sidebar .nav-it.active{background:#fff2e9;color:#d94f00}
@@ -1474,6 +1517,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .ptbl{font-size:11px}
   .th-fix,.fix-cell{width:148px;min-width:148px;padding-left:9px;padding-right:8px}
   .th-mes-grp{width:166px;min-width:166px}
+  .th-total-grp{width:176px;min-width:176px}
   .th-stats-grp{width:180px;min-width:180px}
   .th-stats-cols,.td-stats{grid-template-columns:repeat(3,60px)}
   .td-plan,.td-real{padding:8px 7px}
@@ -1486,6 +1530,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .dt{min-width:720px;font-size:11px}
   .dt th,.dt td{padding:10px 8px}
   .cardgrid{grid-template-columns:1fr!important;gap:10px}
+  .dash-grid,.dash-quarter-grid{grid-template-columns:1fr!important}
   .card{min-width:0}
   .pend-day-head{padding:12px 11px}
   .pend-item{display:grid;grid-template-columns:8px minmax(0,1fr) auto;gap:8px;padding:10px 9px;align-items:center}
@@ -1543,6 +1588,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   </div>
   <div class="nav-sec">
     <div class="nav-lbl">Menu</div>
+    <div class="nav-it" onclick="setPage('dash')" id="nav-dash"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
     <div class="nav-it active" onclick="setPage('plan')" id="nav-plan"><i class="ti ti-table"></i> Planejamento</div>
     <div class="nav-it" onclick="setPage('lanc')" id="nav-lanc"><i class="ti ti-list-details"></i> Lançamentos</div>
     <div class="nav-it" onclick="setPage('pend')" id="nav-pend"><i class="ti ti-clock-exclamation"></i> Pendências</div>
@@ -1566,6 +1612,37 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   </div>
   <div class="content">
 
+    <!-- DASHBOARD -->
+    <div class="page" id="page-dash">
+      <div class="ctrl">
+        <div class="seg">
+          <button class="sb active" onclick="setCDash('todos')" id="dctx-todos">Todos</button>
+          <button class="sb" onclick="setCDash('pessoal')" id="dctx-pessoal">Pessoal</button>
+          <button class="sb" onclick="setCDash('pj')" id="dctx-pj">PJ Aluma</button>
+        </div>
+        <select class="yrsel" id="dash-yr" onchange="renderDashboard()"><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option></select>
+        <div class="plan-period-row">
+          <select class="yrsel" id="dash-mes-ini" onchange="renderDashboard()"></select>
+          <span class="period-sep">→</span>
+          <select class="yrsel" id="dash-mes-fim" onchange="renderDashboard()"></select>
+        </div>
+        <button class="stats-toggle" onclick="setDashRange('month')"><i class="ti ti-calendar-month"></i> Mês atual</button>
+        <button class="stats-toggle" onclick="setDashRange('quarter')"><i class="ti ti-chart-arcs"></i> Trimestre</button>
+        <button class="stats-toggle" onclick="setDashRange('year')"><i class="ti ti-calendar-stats"></i> Anual</button>
+      </div>
+      <div class="sgrid" id="dash-sum"></div>
+      <div class="dash-layout">
+        <div class="dash-card">
+          <div class="dash-card-h"><strong>Leitura mensal</strong><span class="dash-muted" id="dash-period-label"></span></div>
+          <div class="dash-table-wrap"><table class="dash-table" id="dash-month-table"></table></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-h"><strong>Resumo por trimestre</strong><span class="dash-muted">Dentro do período selecionado</span></div>
+          <div class="dash-quarter-grid" id="dash-quarter-grid"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- PLANEJAMENTO -->
     <div class="page active" id="page-plan">
       <div class="ctrl">
@@ -1580,6 +1657,9 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
           <span class="period-sep">→</span>
           <select class="yrsel" id="plan-mes-fim" onchange="buildPlanMeses()"></select>
         </div>
+        <button class="stats-toggle" onclick="setPlanRange('month')"><i class="ti ti-calendar-month"></i> Mês atual</button>
+        <button class="stats-toggle" onclick="setPlanRange('quarter')"><i class="ti ti-chart-arcs"></i> Trimestre</button>
+        <button class="stats-toggle" onclick="setPlanRange('year')"><i class="ti ti-calendar-stats"></i> Anual</button>
         <button class="stats-toggle" id="stats-toggle-btn" onclick="toggleStats()">
           <i class="ti ti-chart-bar"></i> Mín / Méd / Máx
         </button>
@@ -17485,10 +17565,10 @@ const C6_JUNHO_2026_IMPORT=[
 ];
 let recs=[];
 let CAT_ORDER={},SUB_ORDER={};
-let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026;
+let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026, dashMesIni=1, dashMesFim=12;
 let expSubs={};
 let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
-let pg="plan", cPlan="todos", cLanc="todos", cPend="todos", pendTipo="despesa", editSeriesScope="current";
+let pg="plan", cPlan="todos", cLanc="todos", cPend="todos", cDash="todos", pendTipo="despesa", editSeriesScope="current";
 let nid=741, ncid=10, nrid=1;
 let lancsEpoch=0;
 let lancFilter={tipo:"",cat:"",sub:"",cart:"",inst:"",status:"",desc:"",op:"eq",value:"",dateType:"data",dateFrom:"",dateTo:""};
@@ -17538,6 +17618,7 @@ function nextEntityId(){
 
 /* ─── UTILS ─────────────────────────────────────────────── */
 function fmt(v){return "R$\u00a0"+Math.abs(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtSigned(v){return (v<0?"-":"")+fmt(v)}
 function fp(v){return (Math.round(v*10)/10).toFixed(1)+"%"}
 function moneyVal(v){return v>0?fmt(v):""}
 function parseMoney(v){
@@ -18265,13 +18346,14 @@ function setPage(p){
   document.getElementById("page-"+p).classList.add("active");
   document.querySelectorAll(".nav-it").forEach(e=>e.classList.remove("active"));
   document.getElementById("nav-"+p).classList.add("active");
-  const t={plan:"Planejamento e Controle",lanc:"Lançamentos",pend:"Pendências",cart:"Gerenciar Cartões"};
+  const t={dash:"Dashboard",plan:"Planejamento e Controle",lanc:"Lançamentos",pend:"Pendências",cart:"Gerenciar Cartões"};
   document.getElementById("pg-title").textContent=t[p];
   renderAll();
 }
 function renderAll(){
   renderSB();
-  if(pg==="plan") renderPlan();
+  if(pg==="dash") renderDashboard();
+  else if(pg==="plan") renderPlan();
   else if(pg==="lanc") renderLanc();
   else if(pg==="pend") renderPend();
   else if(pg==="cart") renderCart();
@@ -18297,6 +18379,91 @@ function renderSB(){
   if(saldoEl) saldoEl.innerHTML=contas.map(c=>`
     <div class="smini"><span style="color:var(--mu)">${c.nome}</span>
     <span class="smini-vl" style="color:${c.saldo<0?"var(--re)":"var(--grn)"}">${fmt(c.saldo)}</span></div>`).join("");
+}
+
+/* ─── DASHBOARD ─────────────────────────────────────────── */
+function dashCtxs(){return cDash==="todos"?["pessoal","pj"]:[cDash==="pj"?"pj":"pessoal"]}
+function initDashboardSelects(){
+  const ini=document.getElementById("dash-mes-ini"),fim=document.getElementById("dash-mes-fim"),yr=document.getElementById("dash-yr");
+  if(!ini||!fim) return;
+  const opts=MN.slice(1).map((n,i)=>`<option value="${i+1}">${n}</option>`).join("");
+  ini.innerHTML=opts;fim.innerHTML=opts;
+  const now=new Date();
+  if(yr&&[...yr.options].some(o=>Number(o.value)===now.getFullYear()))yr.value=String(now.getFullYear());
+  ini.value=1;fim.value=12;dashMesIni=1;dashMesFim=12;
+}
+function setCDash(v){
+  cDash=v;
+  ["todos","pessoal","pj"].forEach(x=>{const e=document.getElementById("dctx-"+x);if(e)e.classList.toggle("active",x===v)});
+  renderDashboard();
+}
+function setDashRange(mode){
+  const now=new Date(),cur=now.getMonth()+1;
+  let ini=1,fim=12;
+  if(mode==="month"){ini=cur;fim=cur;}
+  if(mode==="quarter"){ini=Math.floor((cur-1)/3)*3+1;fim=ini+2;}
+  const a=document.getElementById("dash-mes-ini"),b=document.getElementById("dash-mes-fim");
+  if(a&&b){a.value=ini;b.value=fim;}
+  renderDashboard();
+}
+function dashMonths(){
+  const a=parseInt(document.getElementById("dash-mes-ini")?.value||dashMesIni||1);
+  const b=parseInt(document.getElementById("dash-mes-fim")?.value||dashMesFim||12);
+  dashMesIni=Math.min(a,b);dashMesFim=Math.max(a,b);
+  const out=[];for(let m=dashMesIni;m<=dashMesFim;m++)out.push(m);return out;
+}
+function dashMonthData(yr,m,ctxs=dashCtxs()){
+  const items=lancs.filter(l=>Number(l.ano)===Number(yr)&&Number(l.mes)===Number(m)&&ctxs.includes(l.ctx));
+  const receita=items.filter(l=>l.tipo==="receita").reduce((s,l)=>s+Number(l.valor||0),0);
+  const despesa=items.filter(l=>l.tipo==="despesa").reduce((s,l)=>s+Number(l.valor||0),0);
+  const fixos=items.filter(l=>l.tipo==="receita"&&String(l.sub||"").toLowerCase().includes("clientes fixos")).reduce((s,l)=>s+Number(l.valor||0),0);
+  const lucro=receita-despesa;
+  const margem=fixos>0?(lucro/fixos)*100:0;
+  return {mes:m,receita,despesa,fixos,lucro,margem};
+}
+function sumDashRows(rows){
+  const receita=rows.reduce((s,r)=>s+r.receita,0),despesa=rows.reduce((s,r)=>s+r.despesa,0),fixos=rows.reduce((s,r)=>s+r.fixos,0);
+  const lucro=receita-despesa,margem=fixos>0?(lucro/fixos)*100:0;
+  return {receita,despesa,fixos,lucro,margem};
+}
+function renderDashboard(){
+  const yr=parseInt(document.getElementById("dash-yr")?.value||new Date().getFullYear());
+  const meses=dashMonths(),ctxs=dashCtxs();
+  const rows=meses.map(m=>dashMonthData(yr,m,ctxs));
+  const total=sumDashRows(rows);
+  const label=meses.length===12?`Ano ${yr}`:`${MN[meses[0]]} a ${MN[meses[meses.length-1]]} ${yr}`;
+  const sum=document.getElementById("dash-sum");
+  if(sum)sum.innerHTML=`
+    <div class="sc"><div class="sc-lbl">Receita</div><div class="sc-val g">${fmt(total.receita)}</div><div class="sc-sub">${label}</div></div>
+    <div class="sc"><div class="sc-lbl">Despesa</div><div class="sc-val r">${fmt(total.despesa)}</div><div class="sc-sub">${ctxs.length>1?"Consolidado":ctxs[0]==="pj"?"PJ Aluma":"Pessoal"}</div></div>
+    <div class="sc"><div class="sc-lbl">Lucro</div><div class="sc-val ${total.lucro>=0?"g":"r"}">${fmtSigned(total.lucro)}</div><div class="pill ${total.lucro>=0?"pill-g":"pill-r"}">${total.lucro>=0?"Positivo":"Negativo"}</div></div>
+    <div class="sc" style="border-left:3px solid var(--or)"><div class="sc-lbl">Margem clientes fixos</div><div class="sc-val ${total.margem>=0?"g":"r"}">${fp(total.margem)}</div><div class="sc-sub">Base fixa: ${fmt(total.fixos)}</div></div>`;
+  const lbl=document.getElementById("dash-period-label");if(lbl)lbl.textContent=label;
+  renderDashMonthTable(rows);
+  renderDashQuarters(yr,ctxs,meses);
+}
+function renderDashMonthTable(rows){
+  const el=document.getElementById("dash-month-table");if(!el)return;
+  el.innerHTML=`<thead><tr><th>Mês</th><th>Receita</th><th>Despesa</th><th>Lucro</th><th>Clientes fixos</th><th>Margem</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr><td class="month-name">${MNF[r.mes]}</td><td>${fmt(r.receita)}</td><td>${fmt(r.despesa)}</td><td class="${r.lucro>=0?"pos":"neg"}">${fmtSigned(r.lucro)}</td><td>${fmt(r.fixos)}</td><td class="${r.margem>=0?"pos":"neg"}">${fp(r.margem)}</td></tr>`).join("")}
+  </tbody>`;
+}
+function renderDashQuarters(yr,ctxs,selectedMonths){
+  const el=document.getElementById("dash-quarter-grid");if(!el)return;
+  const selected=new Set(selectedMonths.map(Number));
+  el.innerHTML=[1,2,3,4].map(q=>{
+    const months=[(q-1)*3+1,(q-1)*3+2,(q-1)*3+3].filter(m=>selected.has(m));
+    const rows=months.map(m=>dashMonthData(yr,m,ctxs));
+    const t=sumDashRows(rows);
+    const inactive=!months.length;
+    return `<div class="dash-quarter" style="${inactive?"opacity:.45":""}">
+      <h4>${q}º TRI</h4>
+      <div class="dash-qrow"><span>Receita</span><strong>${fmt(t.receita)}</strong></div>
+      <div class="dash-qrow"><span>Despesa</span><strong>${fmt(t.despesa)}</strong></div>
+      <div class="dash-qrow"><span>Lucro</span><strong class="${t.lucro>=0?"pos":"neg"}">${fmtSigned(t.lucro)}</strong></div>
+      <div class="dash-qrow"><span>Margem</span><strong class="${t.margem>=0?"pos":"neg"}">${fp(t.margem)}</strong></div>
+    </div>`;
+  }).join("");
 }
 
 /* ─── PLANEJAMENTO ──────────────────────────────────────── */
@@ -18415,6 +18582,16 @@ function buildPlanMeses(){
   renderPlan();
 }
 
+function setPlanRange(mode){
+  const now=new Date(),cur=now.getMonth()+1;
+  let ini=1,fim=12;
+  if(mode==="month"){ini=cur;fim=cur;}
+  if(mode==="quarter"){ini=Math.floor((cur-1)/3)*3+1;fim=ini+2;}
+  const a=document.getElementById("plan-mes-ini"),b=document.getElementById("plan-mes-fim");
+  if(a&&b){a.value=ini;b.value=fim;}
+  buildPlanMeses();
+}
+
 function initPlanSelects(){
   const now=new Date();
   const curM=now.getMonth()+1;
@@ -18435,6 +18612,12 @@ function initPlanSelects(){
 function renderPlan(){
   const yr=parseInt(document.getElementById("plan-yr").value);
   const cl=cPlan==="todos"?["pessoal","pj"]:cPlan==="pj"?["pj"]:["pessoal"];
+  const showAnnualTotal=planMeses.length===12&&planMeses[0]===1&&planMeses[11]===12;
+  const sumVals=arr=>arr.reduce((s,v)=>s+(Number(v)||0),0);
+  const annualTotalCell=(plan,real,opts={})=>`<td class="th-mes-grp th-total-grp" style="padding:0;border-left:3px solid #FDBA74"><div style="display:grid;grid-template-columns:1fr 1fr">
+    <div class="${opts.planClass||"td-plan"} td-total-plan"><span class="${opts.planTextClass||"val-plan"}">${plan>0?fmt(plan):"—"}</span></div>
+    <div class="${opts.realClass||"td-real"} td-total-real"><span class="${opts.realTextClass||"val-ok"}">${real>0||opts.showZero?fmt(real):"—"}</span></div>
+  </div></td>`;
 
   // Summary cards
   let tRec=0,tDesp=0,tPlanDesp=0,tPlanRec=0;
@@ -18484,6 +18667,15 @@ function renderPlan(){
       </div>
     </th>`;
   }
+  if(showAnnualTotal){
+    thead+=`<th class="th-mes-grp th-total-grp" colspan="1">
+      <div class="th-mes-grp-top"><div class="th-mes-nm">TOTAL ANUAL</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div class="th-mes-sub plan">Planejado</div>
+        <div class="th-mes-sub">Realizado</div>
+      </div>
+    </th>`;
+  }
   thead+=`</tr></thead>`;
 
   // Coleta cats
@@ -18509,6 +18701,7 @@ function renderPlan(){
         <div class="sec-real-rec"><span class="sec-num-wh">${fmt(totRecM[i])}</span></div>
       </div></td>`;
   }
+  if(showAnnualTotal)tbody+=annualTotalCell(sumVals(totPlanRecM),sumVals(totRecM),{planClass:"sec-plan-rec",realClass:"sec-real-rec",planTextClass:"sec-num-wh",realTextClass:"sec-num-wh",showZero:true});
   tbody+=`</tr>`;
 
   // Sub-linhas receita
@@ -18536,6 +18729,11 @@ function renderPlan(){
           <div class="td-real"><span class="${v>0?"val-ok":"val-empty"}">${v>0?fmt(v):"—"}</span></div>
         </div></td>`;
       }
+      if(showAnnualTotal){
+        const planTotal=planMeses.reduce((s,m)=>s+getPlanSubCtxValue(yr,m,activePlanCtxs(),rcat,rsub),0);
+        const realTotal=planMeses.reduce((s,m)=>s+getRealRec(yr,m,rcat,rsub),0);
+        tbody+=annualTotalCell(planTotal,realTotal);
+      }
       tbody+=`</tr>`;
     }
   }
@@ -18557,6 +18755,10 @@ function renderPlan(){
         <div class="sec-plan-desp"><span class="sec-num-wh">${totPlanM[i]>0?fmt(totPlanM[i]):"—"}</span></div>
         <div class="sec-real-desp"><span class="sec-num-wh">${over?"⚠ ":""}${fmt(totDespM[i])}</span></div>
       </div></td>`;
+  }
+  if(showAnnualTotal){
+    const planTotal=sumVals(totPlanM),realTotal=sumVals(totDespM),over=realTotal>planTotal&&planTotal>0;
+    tbody+=annualTotalCell(planTotal,realTotal,{planClass:"sec-plan-desp",realClass:"sec-real-desp",planTextClass:"sec-num-wh",realTextClass:"sec-num-wh",showZero:true});
   }
   tbody+=`</tr>`;
 
@@ -18583,6 +18785,11 @@ function renderPlan(){
         <div class="td-real"><span class="${cls}">${r>0?fmt(r):"—"}</span></div>
       </div></td>`;
     }
+    if(showAnnualTotal){
+      const p=sumVals(catPlanM),r=sumVals(catTotM);
+      const cls=r>p&&p>0?"val-over":r>0?"val-ok":"val-empty";
+      tbody+=annualTotalCell(p,r,{realTextClass:cls});
+    }
     tbody+=`</tr>`;
 
     // Sub-linhas
@@ -18607,6 +18814,11 @@ function renderPlan(){
           <div class="td-plan">${planInput({id:spk,value:sv,title:`Planejado: ${sub}`,onchange:`updSP(${yr},${m},'${subCtx}','${cat}','${sub}',this.value)`})}</div>
           <div class="td-real"><span class="${sOver?"val-over":v>0?"val-ok":"val-empty"}">${v>0?fmt(v):"—"}</span></div>
         </div></td>`;
+      }
+      if(showAnnualTotal){
+        const p=sumVals(subPlanM),v=sumVals(subTotM);
+        const cls=p>0&&v>p?"val-over":v>0?"val-ok":"val-empty";
+        tbody+=annualTotalCell(p,v,{realTextClass:cls});
       }
       tbody+=`</tr>`;
 
@@ -18644,6 +18856,7 @@ function renderPlan(){
               tbody+=`<td class="th-mes-grp" style="border-left:2px solid var(--bd2)"><div style="display:grid;grid-template-columns:1fr 1fr"><div class="td-plan"></div><div class="td-real"></div></div></td>`;
             }
           }
+          if(showAnnualTotal)tbody+=annualTotalCell(0,Number(l.valor)||0,{planTextClass:"val-empty",realTextClass:"val-ok"});
           tbody+=`</tr>`;
         }
       }
@@ -18659,6 +18872,14 @@ function renderPlan(){
     tbody+=`<td class="th-mes-grp" style="padding:0;border-left:2px solid var(--bd2)"><div style="display:grid;grid-template-columns:1fr 1fr">
       <div class="td-plan"><span class="val-plan" style="font-weight:600">${p>0?fmt(p):"—"}</span></div>
       <div class="td-real" style="font-weight:700;color:${col}">${fmt(r)}</div>
+    </div></td>`;
+  }
+  if(showAnnualTotal){
+    const p=sumVals(totPlanM),r=sumVals(totDespM);
+    const cls=r>p&&p>0?"var(--re)":r/p>0.8&&p>0?"var(--am)":"var(--te)";
+    tbody+=`<td class="th-mes-grp th-total-grp" style="padding:0;border-left:3px solid #FDBA74"><div style="display:grid;grid-template-columns:1fr 1fr">
+      <div class="td-plan td-total-plan"><span class="val-plan" style="font-weight:700">${p>0?fmt(p):"—"}</span></div>
+      <div class="td-real td-total-real" style="font-weight:800;color:${cls}">${fmt(r)}</div>
     </div></td>`;
   }
   tbody+=`</tr></tbody>`;
@@ -19954,10 +20175,11 @@ function exportar(){
 }
 
 initPlanSelects();
+initDashboardSelects();
 // A abertura normal é sempre alimentada pelo Firestore. Cópias locais ficam disponíveis apenas em Resgate.
 PLAN={}; PLAN_SUB={}; cartoes=[]; contas=[]; lancs=[]; recs=[]; hiddenPendIds=[];
 nid=1; ncid=1; nrid=1; lancsEpoch=0;
-cPlan="todos"; cLanc="todos"; cPend="todos"; pg="plan";
+cPlan="todos"; cLanc="todos"; cPend="todos"; cDash="todos"; pg="plan";
 renderAll();
 appStarted=true;
 setGate(!isUnlocked());
