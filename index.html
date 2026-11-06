@@ -1470,8 +1470,10 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
 @media (max-width:760px){
   :root{--mobile-nav-h:68px}
   html,body{width:100%;max-width:100%;height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  body{padding-bottom:env(safe-area-inset-bottom);position:relative;touch-action:pan-y}
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{padding-bottom:env(safe-area-inset-bottom);position:relative;touch-action:pan-x pan-y pinch-zoom}
   button,input,select,textarea{font-size:16px}
+  input:not([type=checkbox]):not([type=radio]),select,textarea,[contenteditable=true]{font-size:16px!important;max-width:100%;min-width:0}
   button,.btn-g,.btn-p,.stats-toggle,.fbtn,.pay-btn,.hide-pend-btn{min-height:42px}
   .shell{height:auto!important;min-height:100dvh;padding-bottom:calc(var(--mobile-nav-h) + env(safe-area-inset-bottom));overflow:visible!important}
   .main{width:100%;min-width:0;overflow:visible!important}
@@ -1512,8 +1514,8 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .sc-sub{white-space:normal}
   .plan-tbl-outer{width:100%!important;max-width:100%;margin:0;border-radius:10px;overflow:hidden}
   .plan-tbl-scroll{max-width:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin}
-  #page-lanc,#page-pend{touch-action:pan-y}
-  #lanc-body,#rec-body,.table-scroll{max-width:100%;overflow-x:auto!important;overflow-y:visible!important;overscroll-behavior-x:contain;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;touch-action:pan-x pan-y}
+  #page-lanc,#page-pend{touch-action:pan-x pan-y pinch-zoom}
+  #lanc-body,#rec-body,.table-scroll{max-width:100%;overflow-x:auto!important;overflow-y:visible!important;overscroll-behavior-x:contain;overscroll-behavior-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;touch-action:pan-x pan-y pinch-zoom}
   .ptbl{font-size:11px}
   .th-fix,.fix-cell{width:148px;min-width:148px;padding-left:9px;padding-right:8px}
   .th-mes-grp{width:166px;min-width:166px}
@@ -1527,6 +1529,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .fbar #ftipo,.fbar #fcat,.fbar #fst{display:none}
   .fbar .filter-trigger,.fbar .filter-main{grid-column:1;grid-row:2;width:44px;min-width:44px;padding:0;justify-content:center}
   .fbar .filter-period-label{grid-column:2;grid-row:2;min-width:0;margin:0;white-space:normal;line-height:1.25}
+  .fbar .export-filtered{grid-column:1/-1;justify-content:center}
   .dt{min-width:720px;font-size:11px}
   .dt th,.dt td{padding:10px 8px}
   .cardgrid{grid-template-columns:1fr!important;gap:10px}
@@ -1694,6 +1697,7 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
           <select id="ftipo" onchange="renderLanc()"><option value="">Tipo</option><option value="despesa">Despesa</option><option value="receita">Receita</option></select>
           <select id="fcat" onchange="renderLanc()"><option value="">Categoria</option></select>
           <select id="fst" onchange="renderLanc()"><option value="">Status</option><option value="pendente">Pendente</option><option value="concluido">Concluído</option></select>
+          <button class="btn-g export-filtered" onclick="exportar(true)"><i class="ti ti-download"></i> Exportar filtrados</button>
         </div>
         <div id="lanc-body"></div>
       </div>
@@ -17565,7 +17569,7 @@ const C6_JUNHO_2026_IMPORT=[
 ];
 let recs=[];
 let CAT_ORDER={},SUB_ORDER={};
-let planMeses=[4,5,6], lancMes=5, pendMeses=[5,6], cartMes=5, cartYr=2026, dashMesIni=1, dashMesFim=12;
+let planMeses=[4,5,6], lancMes=new Date().getMonth()+1, pendMeses=[new Date().getMonth()+1], cartMes=new Date().getMonth()+1, cartYr=new Date().getFullYear(), dashMesIni=1, dashMesFim=12;
 let expSubs={};
 let fTipo="despesa", ltMode="unico", prTipo="despesa", prMode="parcelado";
 let pg="plan", cPlan="todos", cLanc="todos", cPend="todos", cDash="todos", pendTipo="despesa", editSeriesScope="current";
@@ -19371,32 +19375,41 @@ function lancMatchesAdvancedFilter(l){
   }
   return true;
 }
+function lancPeriodItems(){
+  const yr=Number(document.getElementById("lanc-yr").value);
+  return lancs.filter(l=>(hasPeriodFilter()||l.ano===yr&&l.mes===lancMes)&&(cLanc==="todos"||l.ctx===cLanc));
+}
+function filteredLancItems(){
+  const busca=document.getElementById("busca").value.toLowerCase();
+  const ftipo=document.getElementById("ftipo").value;
+  const fcat=document.getElementById("fcat").value;
+  const fst=document.getElementById("fst").value;
+  return lancPeriodItems().filter(l=>(!busca||String(l.desc||"").toLowerCase().includes(busca))&&
+    (!ftipo||l.tipo===ftipo)&&(!fcat||l.cat===fcat)&&(!fst||l.status===fst)&&lancMatchesAdvancedFilter(l)).sort((a,b)=>{
+    const av=a[lancSort.key]||a.data||"",bv=b[lancSort.key]||b.data||"";
+    const cmp=String(av).localeCompare(String(bv))||String(a.desc).localeCompare(String(b.desc));
+    return lancSort.dir==="asc"?cmp:-cmp;
+  });
+}
+function revealActiveMonth(id){
+  requestAnimationFrame(()=>{
+    const strip=document.getElementById(id),active=strip?.querySelector(".active");
+    if(!active||!strip.clientWidth) return;
+    const box=strip.getBoundingClientRect(),item=active.getBoundingClientRect();
+    if(item.left<box.left||item.right>box.right) strip.scrollLeft+=item.left-box.left-(strip.clientWidth-item.width)/2;
+  });
+}
 function renderLanc(){
   updateLancFilterLabel();
   // chips — 1 por vez
   document.getElementById("lanc-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${lancMes===m?"active":""}" onclick="setLancMes(${m})">${MN[m]}</div>`).join("");
+  revealActiveMonth("lanc-chips");
 
-  const yr=parseInt(document.getElementById("lanc-yr").value);
-  const busca=document.getElementById("busca").value.toLowerCase();
-  const ftipo=document.getElementById("ftipo").value;
   const fcat=document.getElementById("fcat").value;
-  const fst=document.getElementById("fst").value;
-
-  let d=lancs.filter(l=>(hasPeriodFilter()||l.ano===yr&&l.mes===lancMes)&&(cLanc==="todos"||l.ctx===cLanc));
-  const cats=[...new Set(d.map(l=>l.cat))];
+  const d=filteredLancItems();
+  const cats=[...new Set([...lancPeriodItems().map(l=>l.cat),fcat].filter(Boolean))];
   document.getElementById("fcat").innerHTML=`<option value="">Categoria</option>`+cats.map(c=>`<option ${fcat===c?"selected":""}>${c}</option>`).join("");
-  if(busca) d=d.filter(l=>l.desc.toLowerCase().includes(busca));
-  if(ftipo) d=d.filter(l=>l.tipo===ftipo);
-  if(fcat) d=d.filter(l=>l.cat===fcat);
-  if(fst) d=d.filter(l=>l.status===fst);
-  d=d.filter(lancMatchesAdvancedFilter);
-  d.sort((a,b)=>{
-    const av=(a[lancSort.key]||a.data||"");
-    const bv=(b[lancSort.key]||b.data||"");
-    const cmp=String(av).localeCompare(String(bv))||String(a.desc).localeCompare(String(b.desc));
-    return lancSort.dir==="asc"?cmp:-cmp;
-  });
 
   const rec=d.filter(l=>l.tipo==="receita").reduce((s,l)=>s+l.valor,0);
   const desp=d.filter(l=>l.tipo==="despesa").reduce((s,l)=>s+l.valor,0);
@@ -19628,6 +19641,7 @@ function pagarFatura(cardId,yr,mes,ctx){
 function renderPend(){
   document.getElementById("pend-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${pendMeses.includes(m)?"active":""}" onclick="togglePendM(${m})">${MN[m]}</div>`).join("");
+  revealActiveMonth("pend-chips");
   document.getElementById("pendtipo-despesa").classList.toggle("active",pendTipo==="despesa");
   document.getElementById("pendtipo-receita").classList.toggle("active",pendTipo==="receita");
   document.getElementById("pend-card-filters").innerHTML=pendTipo==="despesa"?cartoes.map(c=>`
@@ -19744,6 +19758,7 @@ function renderCart(){
   if(ysel) ysel.value=cartYr;
   document.getElementById("cart-chips").innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12].map(m=>`
     <div class="mc ${cartMes===m?"active":""}" onclick="setCartMes(${m})">${MN[m]}</div>`).join("");
+  revealActiveMonth("cart-chips");
   document.getElementById("cart-grid").innerHTML=cartoes.map(c=>{
     const fat=cardInvoice(c,cartYr,cartMes);
     const pct=c.limite>0?(fat/(fat+c.limite))*100:0;
@@ -20166,14 +20181,34 @@ function restoreLocalBackup(index){
   fechar("modal-rescue");
   alert("Cópia restaurada neste navegador. Aguarde o indicador mostrar Sincronizado antes de abrir em outro aparelho.");
 }
-function exportar(){
-  const h="ID,Tipo,Contexto,Descricao,Valor,DataEvento,DataEfetivacao,Mes,Ano,Categoria,Subcategoria,Instituicao,Status,Tipo Lanc\n";
-  const r=lancs.map(l=>[l.id,l.tipo,l.ctx,`"${l.desc}"`,l.valor.toFixed(2),l.dataEvento||l.data,l.data,l.mes,l.ano,l.cat,l.sub,l.inst,l.status,l.lt].join(",")).join("\n");
-  const b=new Blob(["\uFEFF"+h+r],{type:"text/csv;charset=utf-8;"});
+function lancCsv(items){
+  const cell=value=>{
+    let text=String(value??"");
+    if(/^[=+@-]/.test(text.trimStart())) text="'"+text;
+    return '"'+text.replace(/"/g,'""')+'"';
+  };
+  const rows=[["ID","Tipo","Contexto","Descricao","Valor","DataEvento","DataEfetivacao","Mes","Ano","Categoria","Subcategoria","Instituicao","Cartao de credito","Status","Tipo Lanc"],
+    ...items.map(l=>[l.id,l.tipo,l.ctx,l.desc,Number(l.valor||0).toFixed(2).replace(".",","),l.dataEvento||l.data,l.data,l.mes,l.ano,l.cat,l.sub,l.inst,l.cart||cartoes.find(c=>c.id===l.cartId)?.nome||"",l.status,l.lt])];
+  return "\uFEFF"+rows.map(row=>row.map(cell).join(";")).join("\r\n");
+}
+function exportar(onlyFiltered=pg==="lanc"){
+  const items=onlyFiltered?filteredLancItems():lancs;
+  if(!items.length) return alert("Nenhum lançamento para exportar com os filtros atuais.");
+  const b=new Blob([lancCsv(items)],{type:"text/csv;charset=utf-8;"});
   const u=URL.createObjectURL(b);
-  const a=document.createElement("a");a.href=u;a.download="financeiro.csv";a.click();URL.revokeObjectURL(u);
+  const a=document.createElement("a");a.href=u;a.download=onlyFiltered?"financeiro-filtrado.csv":"financeiro.csv";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
 
+function initCurrentPeriods(){
+  const now=new Date(),year=now.getFullYear();
+  lancMes=cartMes=now.getMonth()+1;pendMeses=[lancMes];cartYr=year;
+  for(const id of ["lanc-yr","pend-yr","cart-yr"]){
+    const select=document.getElementById(id);
+    if(![...select.options].some(o=>Number(o.value)===year)) select.add(new Option(String(year),String(year)));
+    select.value=String(year);
+  }
+}
+initCurrentPeriods();
 initPlanSelects();
 initDashboardSelects();
 // A abertura normal é sempre alimentada pelo Firestore. Cópias locais ficam disponíveis apenas em Resgate.
