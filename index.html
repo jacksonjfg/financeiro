@@ -1554,6 +1554,15 @@ body.sync-loading .nav-it{pointer-events:none;opacity:.72}
   .fact{position:sticky;bottom:calc(-16px - env(safe-area-inset-bottom));z-index:3;margin:8px -15px calc(-16px - env(safe-area-inset-bottom));padding:11px 15px calc(11px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e3e9ef}
   .fact button{flex:1;justify-content:center}
 }
+/* Planning owns one vertical scroller below its fixed controls and summary. */
+@media (min-width:761px){
+  .main:has(#page-plan.active){min-height:0}
+  .content:has(>#page-plan.active){min-height:0;overflow:hidden}
+  #page-plan.active{flex:1;min-height:0;overflow:hidden}
+  #page-plan>.ctrl,#page-plan>#plan-sum{flex-shrink:0}
+  #page-plan>.plan-tbl-outer{display:flex;flex-direction:column;flex:1;min-height:0;max-height:none}
+  #page-plan .plan-tbl-scroll{flex:1;min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+}
 .cat-row small{font-size:9px;color:var(--hi);background:#EEF2F6;border-radius:10px;padding:2px 6px}
 @media (max-width:380px){
   .sgrid{grid-template-columns:1fr!important}
